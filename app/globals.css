@@ -1,3 +1,51 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --main-font-color: #333;
+  --main-theme-color: #007aff;
+  --main-secondary-theme-color: #f4f4f5;
+  font-size: 16px;
+}
+
+html,
+body {
+  height: 100%;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, Helvetica Neue, Helvetica, sans-serif;
+}
+
+html {
+  box-sizing: border-box;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+body {
+  background-color: #fff;
+  color: var(--main-font-color);
+  margin: 0;
+}
+
+button,
+input,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+button {
+  cursor: pointer;
+}
+
+.solid-button {
+  @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none rounded-full py-2 hover:opacity-80;
+}
