@@ -8,7 +8,7 @@ import SidebarToggleButton from './SidebarToggleButton';
 import SidebarLabeledInput from './SidebarLabeledInput';
 
 export default function Sidebar() {
-  const [isOpen, setOpen] = useState(false);
+  const [isOpen, setOpen] = useState<boolean>(false);
   return (
     <>
       <div

@@ -1,15 +1,15 @@
 import Sidebar from './components/Sidebar/Sidebar';
 
 export default function Home() {
+  /* overflow-hidden prevents sticky div from jumping */
   return (
     <div className='min-w-[350px] h-full flex'>
       <Sidebar />
-
-      <div className='flex-1 h-full relative overflow-hidden'>
+      <main className='flex-1 h-full relative overflow-hidden'>
         <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--main-secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
           <div className='after:content-["_💬"]'>Practicing free talk</div>
         </header>
-      </div>
+      </main>
     </div>
   );
 }
