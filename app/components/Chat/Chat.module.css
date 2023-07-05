@@ -1,0 +1,5 @@
+@media (min-width: 768px) {
+  .gradient-to-top {
+    background: linear-gradient(to top, #fff, #fff 60%, rgba(255, 255, 255, 0));
+  }
+}

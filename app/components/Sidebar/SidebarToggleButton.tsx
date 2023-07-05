@@ -1,6 +1,5 @@
-import Image from 'next/image';
-import barRightArrow from '@/public/icons/bar-right-arrow.svg';
-import barLeftArrow from '@/public/icons/bar-left-arrow.svg';
+import BarRightArrow from '@/public/icons/bar-right-arrow.svg';
+import BarLeftArrow from '@/public/icons/bar-left-arrow.svg';
 
 export default function SidebarToggleButton({
   open,
@@ -25,7 +24,7 @@ export default function SidebarToggleButton({
       className={`${buttonStates} lg:hidden right-0 bg-none absolute top-1 z-30 w-auto border-none p-1`}
       onClick={() => setSidebarOpen(open)}
     >
-      <Image priority src={open ? barRightArrow : barLeftArrow} width={24} height={24} alt={open ? 'open' : 'close'} />
+      {open ? <BarRightArrow alt='open' className='w-6 h-6' /> : <BarLeftArrow alt='close' className='w-6 h-6' />}
     </button>
   );
 }

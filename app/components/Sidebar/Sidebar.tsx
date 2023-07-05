@@ -1,8 +1,6 @@
 'use client';
 
-import Image from 'next/image';
-
-import logo from '@/public/icons/logo.svg';
+import Logo from '@/public/icons/logo.svg';
 import { useState } from 'react';
 import SidebarToggleButton from './SidebarToggleButton';
 import SidebarLabeledInput from './SidebarLabeledInput';
@@ -22,13 +20,13 @@ export default function Sidebar() {
           isOpen ? 'translate-x-0' : 'translate-x-[-100%]'
         } lg:translate-x-0 transition-transform duration-300 flex-[0_1_300px] h-full fixed top-0 left-0 z-10 lg:static lg:flex`}
       >
-        <div className='max-w-[300px] h-full relative z-20 bg-zinc-100 border-r border-solid border-b-zinc-200 p-4 flex flex-col overflow-x-visible'>
+        <div className='max-w-[300px] h-full relative z-20 bg-zinc-100 border-r border-solid border-r-zinc-200 p-4 flex flex-col overflow-x-visible'>
           <SidebarToggleButton open sidebarOpen={isOpen} setSidebarOpen={setOpen} />
           <SidebarToggleButton open={false} sidebarOpen={isOpen} setSidebarOpen={setOpen} />
 
           <div className='text-2xl font-[800] my-4 mx-0 flex'>
             <div className='flex-[0_0_1.5rem] mr-3 flex items-center'>
-              <Image priority src={logo} alt='logo' />
+              <Logo alt='logo' />
             </div>
             <span>SmallTalk</span>
           </div>

@@ -47,5 +47,5 @@ button {
 }
 
 .solid-button {
-  @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none rounded-full py-2 hover:opacity-80;
+  @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none rounded-full p-2 hover:opacity-80;
 }
