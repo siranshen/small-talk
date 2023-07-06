@@ -3,8 +3,9 @@ import { v4 as uuidv4 } from 'uuid';
 export class ChatMessage {
   private id: string = uuidv4();
 
-  constructor(private text: string) {
+  constructor(private text: string, private isAi: boolean) {
     this.text = text;
+    this.isAi = isAi;
   }
 
   getType(): string {
@@ -15,14 +16,18 @@ export class ChatMessage {
     return this.id;
   }
 
+  isAiMessage(): boolean {
+    return this.isAi;
+  }
+
   getText(): string {
     return this.text;
   }
 }
 
 export class AudioChatMessage extends ChatMessage {
-  constructor(text: string, private audioSrc: string) {
-    super(text);
+  constructor(text: string, isAi: boolean, private audioSrc: string) {
+    super(text, isAi);
     this.audioSrc = audioSrc;
   }
 

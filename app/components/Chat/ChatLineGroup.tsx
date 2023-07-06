@@ -1,7 +1,8 @@
 import ChatLine from './ChatLine';
 import { AudioChatMessage, ChatMessage } from './ChatMessage';
 
-export default function ChatLineGroup({ isAi, message }: { isAi: boolean; message: ChatMessage }) {
+export default function ChatLineGroup({ message }: { message: ChatMessage }) {
+  const isAi = message.isAiMessage();
   const isAudio = message.getType() === 'audio';
   return (
     <div

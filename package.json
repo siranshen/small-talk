@@ -13,8 +13,8 @@
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "autoprefixer": "10.4.14",
-    "eslint": "8.44.0",
-    "eslint-config-next": "13.4.7",
+    "eslint": "~8.44.0",
+    "eslint-config-next": "~13.4.8",
     "next": "13.4.7",
     "postcss": "8.4.24",
     "react": "18.2.0",
@@ -24,7 +24,9 @@
     "uuid": "9.0.0"
   },
   "devDependencies": {
-    "@svgr/webpack": "^8.0.1",
-    "@types/uuid": "^9.0.2"
+    "@svgr/webpack": "~8.0.1",
+    "@types/uuid": "~9.0.2",
+    "prettier": "~3.0.0",
+    "prettier-plugin-tailwindcss": "~0.3.0"
   }
 }
