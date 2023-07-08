@@ -23,6 +23,13 @@ export class ChatMessage {
   getText(): string {
     return this.text;
   }
+
+  toGPTMessage(): GPTMessage {
+    return {
+      role: this.isAi ? 'assistant' : 'user',
+      content: this.text,
+    }
+  }
 }
 
 export class AudioChatMessage extends ChatMessage {
@@ -38,4 +45,9 @@ export class AudioChatMessage extends ChatMessage {
   getAudioSrc(): string {
     return this.audioSrc;
   }
+}
+
+export interface GPTMessage {
+  role: 'system' | 'assistant' | 'user'
+  content: string
 }

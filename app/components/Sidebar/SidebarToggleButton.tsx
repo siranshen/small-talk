@@ -1,23 +1,23 @@
-import BarRightArrow from '@/public/icons/bar-right-arrow.svg';
-import BarLeftArrow from '@/public/icons/bar-left-arrow.svg';
+import BarRightArrow from '@/public/icons/bar-right-arrow.svg'
+import BarLeftArrow from '@/public/icons/bar-left-arrow.svg'
 
 export default function SidebarToggleButton({
   open,
   sidebarOpen,
   setSidebarOpen,
 }: {
-  open: boolean;
-  sidebarOpen: boolean;
-  setSidebarOpen: Function;
+  open: boolean
+  sidebarOpen: boolean
+  setSidebarOpen: Function
 }) {
-  var buttonStates = '';
+  var buttonStates = ''
   if (open) {
-    buttonStates = 'mr-[-32px]';
+    buttonStates = 'mr-[-32px]'
     if (sidebarOpen) {
-      buttonStates += ' hidden';
+      buttonStates += ' hidden'
     }
   } else if (!sidebarOpen) {
-    buttonStates = 'hidden';
+    buttonStates = 'hidden'
   }
   return (
     <button
@@ -26,5 +26,5 @@ export default function SidebarToggleButton({
     >
       {open ? <BarRightArrow alt='open' className='w-6 h-6' /> : <BarLeftArrow alt='close' className='w-6 h-6' />}
     </button>
-  );
+  )
 }

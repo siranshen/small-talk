@@ -4,10 +4,10 @@ export default function SidebarLabeledInput({
   inputType,
   placeholder,
 }: {
-  label: string;
-  inputId: string;
-  inputType: string;
-  placeholder: string;
+  label: string
+  inputId: string
+  inputType: string
+  placeholder: string
 }) {
   return (
     <div className='my-2 mx-0 flex items-center justify-between'>
@@ -22,5 +22,5 @@ export default function SidebarLabeledInput({
         className='flex-[0_1_200px] border border-solid border-zinc-200 rounded-lg py-2 px-4 text-sm'
       />
     </div>
-  );
+  )
 }

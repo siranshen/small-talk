@@ -1,12 +1,12 @@
-'use client';
+'use client'
 
-import Logo from '@/public/icons/logo.svg';
-import { useState } from 'react';
-import SidebarToggleButton from './SidebarToggleButton';
-import SidebarLabeledInput from './SidebarLabeledInput';
+import Logo from '@/public/icons/logo.svg'
+import { useState } from 'react'
+import SidebarToggleButton from './SidebarToggleButton'
+import SidebarLabeledInput from './SidebarLabeledInput'
 
 export default function Sidebar() {
-  const [isOpen, setOpen] = useState<boolean>(false);
+  const [isOpen, setOpen] = useState<boolean>(false)
   return (
     <>
       <div
@@ -39,6 +39,7 @@ export default function Sidebar() {
             <div className='font-[600] before:content-["▶_"]'>OpenAI</div>
             <SidebarLabeledInput label='API Key' inputId='openai-key' inputType='password' placeholder='sk-xxxxxxx' />
             <SidebarLabeledInput label='Model' inputId='openai-model' inputType='text' placeholder='gpt-3.5-turbo-0613' />
+            <SidebarLabeledInput label='Org' inputId='openai-org' inputType='text' placeholder='org-xxxxxx' />
           </div>
           <div className='mb-4 leading-6'>
             <div className='font-[600] before:content-["▶_"]'>Azure Speech</div>
@@ -53,5 +54,5 @@ export default function Sidebar() {
         </div>
       </div>
     </>
-  );
+  )
 }
