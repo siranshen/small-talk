@@ -16,6 +16,7 @@
     "eslint": "~8.44.0",
     "eslint-config-next": "~13.4.8",
     "eventsource-parser": "~1.0.0",
+    "microsoft-cognitiveservices-speech-sdk": "~1.30.1",
     "next": "13.4.7",
     "postcss": "8.4.24",
     "react": "18.2.0",

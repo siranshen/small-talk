@@ -1,5 +1,6 @@
 import DocsIcon from '@/public/icons/docs.svg'
 import MicIcon from '@/public/icons/mic.svg'
+import MicStopIcon from '@/public/icons/mic-stop.svg'
 import PlusIcon from '@/public/icons/plus.svg'
 import TrashbinIcon from '@/public/icons/trashbin.svg'
 import { useEffect, useRef, useState } from 'react'
@@ -17,10 +18,18 @@ function TooltipItem({ icon, text }: { icon: JSX.Element; text: string }) {
 export default function ChatInput({
   isLoading,
   isStreaming,
+  isRecording,
+  isTranscribing,
+  startRecording,
+  stopRecording,
   sendTextMessage,
 }: {
   isLoading: boolean
   isStreaming: boolean
+  isRecording: boolean
+  isTranscribing: boolean
+  startRecording: Function
+  stopRecording: Function
   sendTextMessage: Function
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -30,7 +39,7 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || isLoading || isStreaming) {
+      if (!input || isLoading || isStreaming || isRecording || isTranscribing) {
         return
       }
       sendTextMessage(input)
@@ -58,15 +67,20 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder='Type your message. Hit Enter to send.'
+          placeholder='Hit Enter to send'
           className='flex-1 border-none resize-none leading-5 max-h-24 mr-[4.75rem] focus:outline-0'
           onInput={handleInput}
           onKeyDown={handleKeyDown}
           value={input}
         ></textarea>
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
-          <button id='mic-btn' disabled={isLoading || isStreaming} className='solid-button mr-2'>
-            <MicIcon width={16} height={16} alt='mic' />
+          <button
+            id='mic-btn'
+            disabled={isLoading || isStreaming || isTranscribing}
+            onClick={() => (isRecording ? stopRecording() : startRecording())}
+            className={`${isRecording ? 'animate-pulse-light' : ''} solid-button mr-2`}
+          >
+            {isRecording ? <MicStopIcon width={16} height={16} alt='stop' /> : <MicIcon width={16} height={16} alt='mic' />}
           </button>
           <button
             id='options-btn'
