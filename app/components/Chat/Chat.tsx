@@ -4,6 +4,7 @@ import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
 import { useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
+import Link from 'next/link'
 
 const MIME_TYPE = 'audio/webm'
 
@@ -16,6 +17,7 @@ export default function Chat() {
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
+  const [audioUrl, setAudioUrl] = useState<string>('')
 
   const sendText = async (message: string) => {
     setLoading(true)
@@ -71,6 +73,7 @@ export default function Chat() {
   }
 
   const startRecording = async () => {
+    // TODO: Setup takes some time, so we should probably have a loading state here
     setRecording(true)
     if (!audioStreamRef.current) {
       try {
@@ -97,17 +100,30 @@ export default function Chat() {
       return
     }
     mediaRecorderRef.current.stop()
-    mediaRecorderRef.current.onstop = () => {
-      const videoBlob = new Blob(audioChunksRef.current, { type: MIME_TYPE })
-      const videoUrl = URL.createObjectURL(videoBlob)
-      // TODO: send audio to server
+    mediaRecorderRef.current.onstop = async () => {
+      const audioBlob = new Blob(audioChunksRef.current, { type: MIME_TYPE })
+      const audioUrl = URL.createObjectURL(audioBlob)
       // Websocket is probably the best way to do this, but it'll require a separate Websocket server...
+      setAudioUrl(audioUrl)
+      await stt(audioBlob)
+      // URL.revokeObjectURL(audioUrl)
       audioChunksRef.current = []
     }
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
     setTranscribing(true)
     setRecording(false)
+  }
+
+  const stt = async (blob: Blob) => {
+    const data = new FormData()
+    data.append('audio', blob)
+    const response = await fetch('/api/azurespeech', {
+      method: 'POST',
+      body: data,
+    })
+    console.log(`Response: ${await response.text()}`)
+    setTranscribing(false)
   }
 
   return (
@@ -117,6 +133,7 @@ export default function Chat() {
           {history.map((msg) => (
             <ChatLineGroup key={msg.getId()} message={msg} />
           ))}
+          {audioUrl && <Link href={audioUrl} />}
           {isTranscribing && <LoadingChatLineGroup isAi={false} />}
           {isLoading && <LoadingChatLineGroup isAi />}
           <div className='clear-both h-32'></div>
