@@ -1,7 +1,7 @@
 'use client'
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import Link from 'next/link'
@@ -9,7 +9,9 @@ import Link from 'next/link'
 const MIME_TYPE = 'audio/webm'
 
 export default function Chat() {
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
+
   const audioStreamRef = useRef<MediaStream | null>(null)
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
@@ -18,6 +20,13 @@ export default function Chat() {
   const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
   const [audioUrl, setAudioUrl] = useState<string>('')
+
+  useEffect(() => {
+    if (!chatContainerRef.current) {
+      return
+    }
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+  }, [history])
 
   const sendText = async (message: string) => {
     setLoading(true)
@@ -127,7 +136,7 @@ export default function Chat() {
   }
 
   return (
-    <div className='my-0 mx-auto h-full overflow-scroll'>
+    <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
       <div className='h-full'>
         <div className='max-w-[650px] my-0 mx-auto p-3'>
           {history.map((msg) => (
