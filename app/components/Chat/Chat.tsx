@@ -5,21 +5,52 @@ import { useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import Link from 'next/link'
+import {
+  AudioConfig,
+  AudioInputStream,
+  CancellationDetails,
+  CancellationReason,
+  PushAudioInputStream,
+  ResultReason,
+  SpeechConfig,
+  SpeechRecognitionResult,
+  SpeechRecognizer,
+} from 'microsoft-cognitiveservices-speech-sdk'
+import { startRecognition, stopRecognition } from '@/app/utils/azure-speech'
 
 const MIME_TYPE = 'audio/webm'
+const speechConfig = SpeechConfig.fromSubscription('', '')
+speechConfig.speechRecognitionLanguage = 'en-US'
+
+async function recognize(speechRecognizer: SpeechRecognizer): Promise<SpeechRecognitionResult> {
+  return new Promise<SpeechRecognitionResult>((resolve, reject) => {
+    console.log('Sending!')
+    speechRecognizer.recognizeOnceAsync(
+      (result) => {
+        console.log('Returned!')
+        resolve(result)
+      },
+      (err) => {
+        console.log('Error!')
+        reject(err)
+      }
+    )
+  })
+}
 
 export default function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
 
   const audioStreamRef = useRef<MediaStream | null>(null)
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
-  const audioChunksRef = useRef<Blob[]>([])
-  const [isRecording, setRecording] = useState<boolean>(false)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
+  const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
+  const lastMessageRef = useRef<string>('')
+  const [isBootstrappingAudio, setBootstrappingAudio] = useState<boolean>(false)
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
-  const [audioUrl, setAudioUrl] = useState<string>('')
 
   useEffect(() => {
     if (!chatContainerRef.current) {
@@ -53,7 +84,7 @@ export default function Chat() {
         throw new Error('No response returned!')
       }
     } catch (e) {
-      console.log('Error calling LLM', e)
+      console.error('Error calling LLM', e)
       setLoading(false)
       return
     }
@@ -67,72 +98,100 @@ export default function Chat() {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         const chunkValue = decoder.decode(value)
-
-        lastMessage = lastMessage + chunkValue
+        lastMessage += chunkValue
 
         setHistory([...newHistory, new ChatMessage(lastMessage, true)])
-        setStreaming(true)
         setLoading(false)
+        setStreaming(true)
       }
     } catch (e) {
-      console.log('Error while reading LLM response', e)
+      console.error('Error while reading LLM response', e)
       setLoading(false)
     }
     setStreaming(false)
   }
 
   const startRecording = async () => {
-    // TODO: Setup takes some time, so we should probably have a loading state here
-    setRecording(true)
+    setBootstrappingAudio(true)
     if (!audioStreamRef.current) {
       try {
         audioStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true })
       } catch (e) {
-        console.log('Error getting audio stream', e)
-        setRecording(false)
+        console.error('Error getting audio stream', e)
+        setBootstrappingAudio(false)
         return
       }
     }
-    const media = new MediaRecorder(audioStreamRef.current, { mimeType: MIME_TYPE })
-    mediaRecorderRef.current = media
-    media.start()
-    media.ondataavailable = (event) => {
-      if (!event.data) {
-        return
+    if (!audioContextRef.current) {
+      // Azure Speech SDK accepts 16kHz mono PCM by default
+      const audioContext = (audioContextRef.current = new AudioContext({ sampleRate: 16000 }))
+      const source = audioContext.createMediaStreamSource(audioStreamRef.current)
+      await audioContext.audioWorklet.addModule('audio/mono-processor.js')
+      const processorNode = new AudioWorkletNode(audioContext, 'MonoProcessor')
+      const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream())
+      processorNode.port.onmessage = (event) => {
+        pushStream.write(new Int16Array(event.data).buffer)
       }
-      audioChunksRef.current.push(event.data)
+      source.connect(processorNode)
+      const audioConfig = AudioConfig.fromStreamInput(pushStream)
+      const speechRecognizer = (speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig))
+
+      lastMessageRef.current = ''
+      speechRecognizer.recognized = (_, event) => {
+        let result = event.result
+        switch (result.reason) {
+          case ResultReason.RecognizedSpeech:
+            // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
+            if (lastMessageRef.current === '') {
+              lastMessageRef.current = result.text
+            } else {
+              lastMessageRef.current += ' ' + result.text
+            }
+            break
+          case ResultReason.NoMatch:
+            console.log('Speech could not be recognized.')
+            break
+          case ResultReason.Canceled:
+            const cancellation = CancellationDetails.fromResult(result)
+            console.log(`Speech recognization canceled: ${cancellation.reason}`)
+
+            if (cancellation.reason == CancellationReason.Error) {
+              console.error(`Speech recognization error: ${cancellation.ErrorCode}, ${cancellation.errorDetails}`)
+            }
+            break
+        }
+      }
+      setBootstrappingAudio(false)
+      setTranscribing(true)
+      try {
+        await startRecognition(speechRecognizer)
+      } catch (e) {
+        console.error('Error starting recognition', e)
+        setTranscribing(false)
+      }
     }
   }
 
   const stopRecording = async () => {
-    if (!mediaRecorderRef.current) {
-      return
+    try {
+      await stopRecognition(speechRecognizerRef.current)
+    } catch (e) {
+      console.error('Error stopping recognition', e)
     }
-    mediaRecorderRef.current.stop()
-    mediaRecorderRef.current.onstop = async () => {
-      const audioBlob = new Blob(audioChunksRef.current, { type: MIME_TYPE })
-      const audioUrl = URL.createObjectURL(audioBlob)
-      // Websocket is probably the best way to do this, but it'll require a separate Websocket server...
-      setAudioUrl(audioUrl)
-      await stt(audioBlob)
-      // URL.revokeObjectURL(audioUrl)
-      audioChunksRef.current = []
-    }
+    speechRecognizerRef.current?.close()
+    speechRecognizerRef.current = null
+    pushAudioInputStreamRef.current?.close()
+    pushAudioInputStreamRef.current = null
+    audioContextRef.current?.close()
+    audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
-    setTranscribing(true)
-    setRecording(false)
-  }
-
-  const stt = async (blob: Blob) => {
-    const data = new FormData()
-    data.append('audio', blob)
-    const response = await fetch('/api/azurespeech', {
-      method: 'POST',
-      body: data,
-    })
-    console.log(`Response: ${await response.text()}`)
     setTranscribing(false)
+    const lastMessage = lastMessageRef.current
+    lastMessageRef.current = ''
+    if (lastMessage.trim()) {
+      await sendText(lastMessage)
+    }
   }
 
   return (
@@ -142,7 +201,6 @@ export default function Chat() {
           {history.map((msg) => (
             <ChatLineGroup key={msg.getId()} message={msg} />
           ))}
-          {audioUrl && <Link href={audioUrl} />}
           {isTranscribing && <LoadingChatLineGroup isAi={false} />}
           {isLoading && <LoadingChatLineGroup isAi />}
           <div className='clear-both h-32'></div>
@@ -151,7 +209,7 @@ export default function Chat() {
       <ChatInput
         isLoading={isLoading}
         isStreaming={isStreaming}
-        isRecording={isRecording}
+        isBootstrappingAudio={isBootstrappingAudio}
         isTranscribing={isTranscribing}
         startRecording={startRecording}
         stopRecording={stopRecording}

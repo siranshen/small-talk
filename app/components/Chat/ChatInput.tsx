@@ -1,5 +1,6 @@
 import DocsIcon from '@/public/icons/docs.svg'
 import MicIcon from '@/public/icons/mic.svg'
+import MicLoading from '@/public/icons/mic-loading.svg'
 import MicStopIcon from '@/public/icons/mic-stop.svg'
 import PlusIcon from '@/public/icons/plus.svg'
 import TrashbinIcon from '@/public/icons/trashbin.svg'
@@ -18,7 +19,7 @@ function TooltipItem({ icon, text }: { icon: JSX.Element; text: string }) {
 export default function ChatInput({
   isLoading,
   isStreaming,
-  isRecording,
+  isBootstrappingAudio,
   isTranscribing,
   startRecording,
   stopRecording,
@@ -26,7 +27,7 @@ export default function ChatInput({
 }: {
   isLoading: boolean
   isStreaming: boolean
-  isRecording: boolean
+  isBootstrappingAudio: boolean
   isTranscribing: boolean
   startRecording: Function
   stopRecording: Function
@@ -39,7 +40,7 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || isLoading || isStreaming || isRecording || isTranscribing) {
+      if (!input || isLoading || isStreaming || isBootstrappingAudio || isTranscribing) {
         return
       }
       sendTextMessage(input)
@@ -76,11 +77,17 @@ export default function ChatInput({
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
           <button
             id='mic-btn'
-            disabled={isLoading || isStreaming || isTranscribing}
-            onClick={() => (isRecording ? stopRecording() : startRecording())}
-            className={`${isRecording ? 'animate-pulse-light' : ''} solid-button mr-2`}
+            disabled={isLoading || isStreaming || isBootstrappingAudio}
+            onClick={() => (isTranscribing ? stopRecording() : startRecording())}
+            className={`${isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
           >
-            {isRecording ? <MicStopIcon width={16} height={16} alt='stop' /> : <MicIcon width={16} height={16} alt='mic' />}
+            {isBootstrappingAudio ? (
+              <MicLoading width={16} height={16} alt='loading' />
+            ) : isTranscribing ? (
+              <MicStopIcon width={16} height={16} alt='stop' />
+            ) : (
+              <MicIcon width={16} height={16} alt='mic' />
+            )}
           </button>
           <button
             id='options-btn'
