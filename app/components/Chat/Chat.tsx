@@ -4,7 +4,6 @@ import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
 import { useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
-import Link from 'next/link'
 import {
   AudioConfig,
   AudioInputStream,
@@ -12,31 +11,9 @@ import {
   CancellationReason,
   PushAudioInputStream,
   ResultReason,
-  SpeechConfig,
-  SpeechRecognitionResult,
   SpeechRecognizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
-import { startRecognition, stopRecognition } from '@/app/utils/azure-speech'
-
-const MIME_TYPE = 'audio/webm'
-const speechConfig = SpeechConfig.fromSubscription('', '')
-speechConfig.speechRecognitionLanguage = 'en-US'
-
-async function recognize(speechRecognizer: SpeechRecognizer): Promise<SpeechRecognitionResult> {
-  return new Promise<SpeechRecognitionResult>((resolve, reject) => {
-    console.log('Sending!')
-    speechRecognizer.recognizeOnceAsync(
-      (result) => {
-        console.log('Returned!')
-        resolve(result)
-      },
-      (err) => {
-        console.log('Error!')
-        reject(err)
-      }
-    )
-  })
-}
+import { getSpeechRecognizer, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
 
 export default function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -134,7 +111,14 @@ export default function Chat() {
       }
       source.connect(processorNode)
       const audioConfig = AudioConfig.fromStreamInput(pushStream)
-      const speechRecognizer = (speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig))
+      try {
+        speechRecognizerRef.current = await getSpeechRecognizer(audioConfig)
+      } catch (e) {
+        releaseAudioResources()
+        setBootstrappingAudio(false)
+        return
+      }
+      const speechRecognizer = speechRecognizerRef.current
 
       lastMessageRef.current = ''
       speechRecognizer.recognized = (_, event) => {
@@ -167,6 +151,7 @@ export default function Chat() {
         await startRecognition(speechRecognizer)
       } catch (e) {
         console.error('Error starting recognition', e)
+        releaseAudioResources()
         setTranscribing(false)
       }
     }
@@ -178,6 +163,16 @@ export default function Chat() {
     } catch (e) {
       console.error('Error stopping recognition', e)
     }
+    releaseAudioResources()
+    setTranscribing(false)
+    const lastMessage = lastMessageRef.current
+    lastMessageRef.current = ''
+    if (lastMessage.trim()) {
+      await sendText(lastMessage)
+    }
+  }
+
+  const releaseAudioResources = () => {
     speechRecognizerRef.current?.close()
     speechRecognizerRef.current = null
     pushAudioInputStreamRef.current?.close()
@@ -186,12 +181,6 @@ export default function Chat() {
     audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
-    setTranscribing(false)
-    const lastMessage = lastMessageRef.current
-    lastMessageRef.current = ''
-    if (lastMessage.trim()) {
-      await sendText(lastMessage)
-    }
   }
 
   return (
