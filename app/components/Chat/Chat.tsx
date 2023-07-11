@@ -193,15 +193,15 @@ export default function Chat() {
   }
 
   const releaseAudioResources = () => {
-    speechRecognizerRef.current?.close()
-    speechRecognizerRef.current = null
-    pushAudioInputStreamRef.current?.close()
-    pushAudioInputStreamRef.current = null
     audioBuffersRef.current = []
     audioContextRef.current?.close()
     audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
+    pushAudioInputStreamRef.current?.close()
+    pushAudioInputStreamRef.current = null
+    speechRecognizerRef.current?.close()
+    speechRecognizerRef.current = null
   }
 
   return (
