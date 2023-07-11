@@ -1,5 +1,6 @@
 import AudioPlayIcon from '@/public/icons/audio-play.svg'
 import LoadingIcon from '@/public/icons/loading.svg'
+import { useRef } from 'react';
 
 function ChatLineLayout({ isAi, children }: { isAi: boolean; children: React.ReactNode }) {
   return (
@@ -14,15 +15,16 @@ function ChatLineLayout({ isAi, children }: { isAi: boolean; children: React.Rea
 }
 
 export function ChatLine({ isAi, isAudio, content }: { isAi: boolean; isAudio: boolean; content: string }) {
+  const audioRef = useRef<HTMLAudioElement | null>(null)
   return (
     <ChatLineLayout isAi={isAi}>
       {isAudio ? (
         <>
-          <button className='border-none bg-none w-6 h-6 mr-3 flex-none hover:opacity-80'>
+          <button className='border-none bg-none w-6 h-6 mr-3 flex-none hover:opacity-80' onClick={() => audioRef?.current?.play()}>
             <AudioPlayIcon width={24} height={24} alt='play' />
+            <audio src={content} ref={audioRef} className='hidden' />
           </button>
           <canvas height='48' width='400' className='w-[200px] h-6'></canvas>
-          <audio src={content} className='hidden' />
         </>
       ) : (
         content

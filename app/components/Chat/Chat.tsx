@@ -14,6 +14,9 @@ import {
   SpeechRecognizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
 import { getSpeechRecognizer, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
+import { exportAudioInWav } from '@/app/utils/audio'
+
+const SAMPLE_RATE = 16000
 
 export default function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
@@ -23,6 +26,7 @@ export default function Chat() {
   const audioContextRef = useRef<AudioContext | null>(null)
   const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
   const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
+  const audioBuffersRef = useRef<Int16Array[][]>([])
   const lastMessageRef = useRef<string>('')
   const [isBootstrappingAudio, setBootstrappingAudio] = useState<boolean>(false)
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
@@ -36,12 +40,8 @@ export default function Chat() {
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
   }, [history])
 
-  const sendText = async (message: string) => {
+  const generateResponse = async (newHistory: ChatMessage[]) => {
     setLoading(true)
-    const newMessage = new ChatMessage(message, false)
-    const newHistory = [...history, newMessage]
-    setHistory(newHistory)
-
     let dataStream
     try {
       const response = await fetch('/api/openai', {
@@ -88,6 +88,13 @@ export default function Chat() {
     setStreaming(false)
   }
 
+  const sendText = async (message: string) => {
+    const newMessage = new ChatMessage(message, false)
+    const newHistory = [...history, newMessage]
+    setHistory(newHistory)
+    await generateResponse(newHistory)
+  }
+
   const startRecording = async () => {
     setBootstrappingAudio(true)
     if (!audioStreamRef.current) {
@@ -101,15 +108,22 @@ export default function Chat() {
     }
     if (!audioContextRef.current) {
       // Azure Speech SDK accepts 16kHz mono PCM by default
-      const audioContext = (audioContextRef.current = new AudioContext({ sampleRate: 16000 }))
+      const audioContext = (audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE }))
       const source = audioContext.createMediaStreamSource(audioStreamRef.current)
       await audioContext.audioWorklet.addModule('audio/mono-processor.js')
       const processorNode = new AudioWorkletNode(audioContext, 'MonoProcessor')
+      const buffers: Int16Array[][] = (audioBuffersRef.current = [])
       const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream())
       processorNode.port.onmessage = (event) => {
-        pushStream.write(new Int16Array(event.data).buffer)
+        switch (event.data.type) {
+          case 'interm':
+            buffers.push(event.data.buffer)
+            break
+          case 'final':
+            pushStream.write(new Int16Array(event.data.outputChannel).buffer)
+            break
+        }
       }
-      source.connect(processorNode)
       const audioConfig = AudioConfig.fromStreamInput(pushStream)
       try {
         speechRecognizerRef.current = await getSpeechRecognizer(audioConfig)
@@ -145,6 +159,7 @@ export default function Chat() {
             break
         }
       }
+      source.connect(processorNode) // Start recording
       setBootstrappingAudio(false)
       setTranscribing(true)
       try {
@@ -163,12 +178,17 @@ export default function Chat() {
     } catch (e) {
       console.error('Error stopping recognition', e)
     }
+    const audioBlob = exportAudioInWav(SAMPLE_RATE, audioBuffersRef.current)
+    const audioUrl = URL.createObjectURL(audioBlob)
     releaseAudioResources()
     setTranscribing(false)
+
     const lastMessage = lastMessageRef.current
     lastMessageRef.current = ''
     if (lastMessage.trim()) {
-      await sendText(lastMessage)
+      const newHistory = [...history, new AudioChatMessage(lastMessage, false, audioUrl)]
+      setHistory(newHistory)
+      await generateResponse(newHistory)
     }
   }
 
@@ -177,6 +197,7 @@ export default function Chat() {
     speechRecognizerRef.current = null
     pushAudioInputStreamRef.current?.close()
     pushAudioInputStreamRef.current = null
+    audioBuffersRef.current = []
     audioContextRef.current?.close()
     audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())

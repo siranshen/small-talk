@@ -9,19 +9,25 @@ class MonoProcessor extends AudioWorkletProcessor {
 
     if (input.length === 2) {
       // The input is stereo
-      const left = input[0]
-      const right = input[1]
+      const left = input[0],
+        right = input[1],
+        newLeft = [],
+        newRight = []
       for (let i = 0; i < left.length; ++i) {
         // Convert stereo to mono by averaging the two channels
-        outputChannel[i] = floatTo16BitPCM((left[i] + right[i]) / 2)
+        newLeft[i] = floatTo16BitPCM(left[i])
+        newRight[i] = floatTo16BitPCM(right[i])
+        outputChannel[i] = (newLeft[i] + newRight[i]) / 2
       }
+      this.port.postMessage({ type: 'interm', buffer: [newLeft, newRight] })
     } else if (input.length === 1) {
       // The input is already mono
       for (let i = 0; i < left.length; ++i) {
         outputChannel[i] = floatTo16BitPCM(input[0])
       }
+      this.port.postMessage({ type: 'interm', buffer: [outputChannel] })
     }
-    this.port.postMessage(outputChannel)
+    this.port.postMessage({ type: 'final', outputChannel })
 
     return true
   }
