@@ -12,6 +12,7 @@
     "@types/node": "20.3.3",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
+    "async": "~3.2.4",
     "autoprefixer": "10.4.14",
     "eslint": "~8.44.0",
     "eslint-config-next": "~13.4.8",
@@ -27,6 +28,7 @@
   },
   "devDependencies": {
     "@svgr/webpack": "~8.0.1",
+    "@types/async": "~3.2.20",
     "@types/uuid": "~9.0.2",
     "prettier": "~3.0.0",
     "prettier-plugin-tailwindcss": "~0.3.0"

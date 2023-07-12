@@ -2,7 +2,7 @@
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
 import { useEffect, useRef, useState } from 'react'
-import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
+import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import {
   AudioConfig,
@@ -12,9 +12,12 @@ import {
   PushAudioInputStream,
   ResultReason,
   SpeechRecognizer,
+  SpeechSynthesisOutputFormat,
+  SpeechSynthesizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
-import { getSpeechRecognizer, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
+import { SpeechSynthesisTask, generateSpeech, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
 import { exportAudioInWav } from '@/app/utils/audio'
+import { queue } from 'async'
 
 const SAMPLE_RATE = 16000
 
@@ -42,9 +45,9 @@ export default function Chat() {
 
   const generateResponse = async (newHistory: ChatMessage[]) => {
     setLoading(true)
-    let dataStream
+    let response, speechConfig
     try {
-      const response = await fetch('/api/openai', {
+      const llmCallPromise = fetch('/api/openai', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,34 +56,46 @@ export default function Chat() {
           messages: newHistory.slice(-8).map((msg) => msg.toGPTMessage()),
         }),
       })
+      const speechConfigPromise = getSpeechConfig()
+      ;[response, speechConfig] = await Promise.all([llmCallPromise, speechConfigPromise])
+
       if (!response.ok) {
         throw new Error(response.statusText)
       }
-      dataStream = response.body
-      if (!dataStream) {
+      if (!response.body) {
         throw new Error('No response returned!')
       }
     } catch (e) {
-      console.error('Error calling LLM', e)
+      console.error('Error generating response', e)
       setLoading(false)
       return
     }
 
-    const reader = dataStream.getReader()
+    const reader = response.body.getReader()
     const decoder = new TextDecoder()
     let done = false
     let lastMessage = ''
+    speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm
+    const speechSynthesizer = new SpeechSynthesizer(speechConfig, AudioConfig.fromDefaultSpeakerOutput())
+    const q = queue(async (task: SpeechSynthesisTask, callback) => {
+      const audioData = await generateSpeech(speechSynthesizer, task.text, 'en-US')
+    }, 1)
     try {
       while (!done) {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         const chunkValue = decoder.decode(value)
-        lastMessage += chunkValue
+        if (chunkValue.trim() === PAUSE_TOKEN) {
+          await q.push({ text: lastMessage })
+        } else {
+          lastMessage += chunkValue
+        }
 
         setHistory([...newHistory, new ChatMessage(lastMessage, true)])
         setLoading(false)
         setStreaming(true)
       }
+      await q.drain()
     } catch (e) {
       console.error('Error while reading LLM response', e)
       setLoading(false)
@@ -126,7 +141,8 @@ export default function Chat() {
       }
       const audioConfig = AudioConfig.fromStreamInput(pushStream)
       try {
-        speechRecognizerRef.current = await getSpeechRecognizer(audioConfig)
+        const speechConfig = await getSpeechConfig()
+        speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
       } catch (e) {
         releaseAudioResources()
         setBootstrappingAudio(false)

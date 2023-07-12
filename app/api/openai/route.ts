@@ -1,7 +1,11 @@
+import { PAUSE_TOKEN } from '@/app/utils/chat-message'
 import { ParsedEvent, ReconnectInterval, createParser } from 'eventsource-parser'
 import { NextRequest, NextResponse } from 'next/server'
 
 const URL = 'https://api.openai.com/v1/chat/completions'
+const SYSTEM_PROMPT = `You are an English native speaker, talking to a person that is a non-native speaker. Talk in an informal tone as a friend.
+Add a special token ${PAUSE_TOKEN} at the end of every sentence to simulate a pause when a real person talks.
+For example: "Hey, man! ${PAUSE_TOKEN} I haven't seen you for a while. ${PAUSE_TOKEN} How've you been?"`
 
 export async function POST(request: NextRequest) {
   const { messages } = await request.json()
@@ -19,8 +23,7 @@ export async function POST(request: NextRequest) {
       messages: [
         {
           role: 'system',
-          content:
-            'You are an English native speaker, talking to a person that is a non-native speaker. Talk in an informal tone as a friend.',
+          content: SYSTEM_PROMPT,
         },
         ...messages,
       ],
@@ -36,7 +39,7 @@ export async function POST(request: NextRequest) {
   if (res.status !== 200) {
     const result = await res.json()
     console.log(`OpenAI API returned an error: ${result?.error || decoder.decode(result?.value) || result.statusText}`)
-    return new NextResponse('Error calling OpenAI', { status: 500 });
+    return new NextResponse('Error calling OpenAI', { status: 500 })
   }
 
   const stream = new ReadableStream({

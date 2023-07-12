@@ -1,4 +1,4 @@
-import { AudioConfig, SpeechConfig, SpeechRecognizer } from 'microsoft-cognitiveservices-speech-sdk'
+import { SpeechConfig, SpeechRecognizer, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'
 
 export async function startRecognition(speechRecognizer: SpeechRecognizer | null): Promise<void> {
   if (!speechRecognizer) {
@@ -39,7 +39,7 @@ let azureToken = {
   lastRetrieved: 0, // Unix timestamp in ms
 }
 
-export async function getSpeechRecognizer(audioConfig: AudioConfig): Promise<SpeechRecognizer> {
+export async function getSpeechConfig(): Promise<SpeechConfig> {
   if (azureToken.lastRetrieved + VALIDITY_DURATION < Date.now()) {
     // Token is about to expire. Get a new one
     try {
@@ -61,6 +61,29 @@ export async function getSpeechRecognizer(audioConfig: AudioConfig): Promise<Spe
       return Promise.reject(e)
     }
   }
-  const speechConfig = SpeechConfig.fromAuthorizationToken(azureToken.token, azureToken.region)
-  return Promise.resolve(new SpeechRecognizer(speechConfig, audioConfig))
+  return SpeechConfig.fromAuthorizationToken(azureToken.token, azureToken.region)
+}
+
+export interface SpeechSynthesisTask {
+  text: string
+}
+
+export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text: string, lang: string): Promise<ArrayBuffer> {
+  return new Promise<ArrayBuffer>((resolve, reject) => {
+    speechSynthesizer.speakSsmlAsync(
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${lang}">
+        <voice name="en-US-JennyNeural">
+          <mstts:express-as style="chat">
+            ${text}
+          </mstts:express-as>
+        </voice>
+      </speak>`,
+      (result) => {
+        resolve(result.audioData)
+      },
+      (err) => {
+        reject(err)
+      }
+    )
+  })
 }

@@ -51,3 +51,5 @@ export interface GPTMessage {
   role: 'system' | 'assistant' | 'user'
   content: string
 }
+
+export const PAUSE_TOKEN = '§';
