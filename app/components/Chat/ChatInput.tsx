@@ -19,7 +19,7 @@ function TooltipItem({ icon, text }: { icon: JSX.Element; text: string }) {
 export default function ChatInput({
   isLoading,
   isStreaming,
-  isBootstrappingAudio,
+  isConfiguringAudio,
   isTranscribing,
   startRecording,
   stopRecording,
@@ -27,7 +27,7 @@ export default function ChatInput({
 }: {
   isLoading: boolean
   isStreaming: boolean
-  isBootstrappingAudio: boolean
+  isConfiguringAudio: boolean
   isTranscribing: boolean
   startRecording: Function
   stopRecording: Function
@@ -40,7 +40,7 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || isLoading || isStreaming || isBootstrappingAudio || isTranscribing) {
+      if (!input || isLoading || isStreaming || isConfiguringAudio || isTranscribing) {
         return
       }
       sendTextMessage(input)
@@ -68,7 +68,7 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder='Hit Enter to send'
+          placeholder='Hit enter to send'
           className='flex-1 border-none resize-none leading-5 max-h-24 mr-[4.75rem] focus:outline-0'
           onInput={handleInput}
           onKeyDown={handleKeyDown}
@@ -77,11 +77,11 @@ export default function ChatInput({
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
           <button
             id='mic-btn'
-            disabled={isLoading || isStreaming || isBootstrappingAudio}
+            disabled={isLoading || isStreaming || isConfiguringAudio}
             onClick={() => (isTranscribing ? stopRecording() : startRecording())}
             className={`${isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
           >
-            {isBootstrappingAudio ? (
+            {isConfiguringAudio ? (
               <MicLoading width={16} height={16} alt='loading' />
             ) : isTranscribing ? (
               <MicStopIcon width={16} height={16} alt='stop' />

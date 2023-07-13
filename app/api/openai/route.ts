@@ -3,9 +3,11 @@ import { ParsedEvent, ReconnectInterval, createParser } from 'eventsource-parser
 import { NextRequest, NextResponse } from 'next/server'
 
 const URL = 'https://api.openai.com/v1/chat/completions'
-const SYSTEM_PROMPT = `You are an English native speaker, talking to a person that is a non-native speaker. Talk in an informal tone as a friend.
-Add a special token ${PAUSE_TOKEN} at the end of every sentence to simulate a pause when a real person talks.
-For example: "Hey, man! ${PAUSE_TOKEN} I haven't seen you for a while. ${PAUSE_TOKEN} How've you been?"`
+const SYSTEM_PROMPT = `You are an English native speaker, talking to a person that is a non-native speaker.
+Talk in an informal tone as a friend.
+Don't say too much at once.
+Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations. \
+For example: "Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?"`
 
 export async function POST(request: NextRequest) {
   const { messages } = await request.json()

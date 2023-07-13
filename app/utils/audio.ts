@@ -20,18 +20,47 @@ export function exportAudioInWav(sampleRate: number, buffers: Int16Array[][]): B
     }
   }
   const merged = mergeBuffers(newBuffers, totalLength)
-  const dataview = encodeWav(sampleRate, numChannels, merged)
+  const dataview = encodeWavSamples(sampleRate, numChannels, merged)
   return new Blob([dataview], { type: 'audio/wav' })
 }
 
-function encodeWav(sampleRate: number, numChannels: number, samples: Int16Array): DataView {
-  let buffer = new ArrayBuffer(44 + samples.length * 2)
-  let view = new DataView(buffer)
+export function exportBufferInWav(sampleRate: number, numChannels: number, buffer: ArrayBuffer): Blob {
+  const newBuffer = new Uint8Array(44 + buffer.byteLength)
+  newBuffer.set(new Uint8Array(buffer), 44)
+  const view = new DataView(newBuffer.buffer)
+  writeHeader(view, sampleRate, numChannels, buffer.byteLength)
+  return new Blob([view], { type: 'audio/wav' })
+}
 
+export function exportBuffersInWav(sampleRate: number, numChannels: number, buffers: ArrayBuffer[]): Blob {
+  const totalBytes = buffers.reduce((partialSum, b) => partialSum + b.byteLength, 0)
+  const newBuffer = new Uint8Array(44 + totalBytes)
+  let offset = 44
+  for (let i = 0; i < buffers.length; i++) {
+    newBuffer.set(new Uint8Array(buffers[i]), offset)
+    offset += buffers[i].byteLength
+  }
+  const view = new DataView(newBuffer.buffer)
+  writeHeader(view, sampleRate, numChannels, totalBytes)
+  return new Blob([view], { type: 'audio/wav' })
+}
+
+function encodeWavSamples(sampleRate: number, numChannels: number, samples: Int16Array): DataView {
+  const buffer = new ArrayBuffer(44 + samples.length * 2)
+  const view = new DataView(buffer)
+  writeHeader(view, sampleRate, numChannels, samples.length * 2)
+  for (let i = 0, offset = 44; i < samples.length; i++, offset += 2) {
+    view.setInt16(offset, samples[i], true)
+  }
+
+  return view
+}
+
+function writeHeader(view: DataView, sampleRate: number, numChannels: number, dataChunkLength: number) {
   /* RIFF identifier */
   writeString(view, 0, 'RIFF')
   /* RIFF chunk length */
-  view.setUint32(4, 36 + samples.length * 2, true)
+  view.setUint32(4, 36 + dataChunkLength, true)
   /* RIFF type */
   writeString(view, 8, 'WAVE')
   /* format chunk identifier */
@@ -53,13 +82,7 @@ function encodeWav(sampleRate: number, numChannels: number, samples: Int16Array)
   /* data chunk identifier */
   writeString(view, 36, 'data')
   /* data chunk length */
-  view.setUint32(40, samples.length * 2, true)
-
-  for (let i = 0, offset = 44; i < samples.length; i++, offset += 2) {
-    view.setInt16(offset, samples[i], true)
-  }
-
-  return view
+  view.setUint32(40, dataChunkLength, true)
 }
 
 function writeString(view: DataView, offset: number, str: string): void {
@@ -89,4 +112,8 @@ function interleave(leftChannel: Int16Array, rightChannel: Int16Array): Int16Arr
     inputIndex++
   }
   return result
+}
+
+export interface AudioPlayTask {
+  audioData: ArrayBuffer
 }

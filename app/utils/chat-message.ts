@@ -2,9 +2,12 @@ import { v4 as uuidv4 } from 'uuid';
 
 export class ChatMessage {
   private id: string = uuidv4();
+  // The actual text that will be sent to the AI
+  private llmText: string
 
   constructor(private text: string, private isAi: boolean) {
-    this.text = text;
+    this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '');
+    this.llmText = text
     this.isAi = isAi;
   }
 
@@ -27,7 +30,7 @@ export class ChatMessage {
   toGPTMessage(): GPTMessage {
     return {
       role: this.isAi ? 'assistant' : 'user',
-      content: this.text,
+      content: this.llmText,
     }
   }
 }

@@ -11,7 +11,7 @@ import {
   startRecognition,
   stopRecognition,
 } from '@/app/utils/azure-speech'
-import { exportAudioInWav } from '@/app/utils/audio'
+import { AudioPlayTask, exportAudioInWav, exportBufferInWav, exportBuffersInWav } from '@/app/utils/audio'
 import { queue } from 'async'
 import {
   AudioConfig,
@@ -34,10 +34,11 @@ export default function Chat() {
   const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
+  const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null)
   const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
   const audioBuffersRef = useRef<Int16Array[][]>([])
   const lastMessageRef = useRef<string>('')
-  const [isBootstrappingAudio, setBootstrappingAudio] = useState<boolean>(false)
+  const [isConfiguringAudio, setConfiguringAudio] = useState<boolean>(false)
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
@@ -82,33 +83,56 @@ export default function Chat() {
     let done = false
     let lastMessage = '',
       lastPauseIndex = 0
-    speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm
-    const speechSynthesizer = new SpeechSynthesizer(speechConfig, AudioConfig.fromDefaultSpeakerOutput())
-    const q = queue(async (task: SpeechSynthesisTask, callback) => {
-      console.log('Generating speech for', task.text)
+    speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm
+    const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(speechConfig))
+    const audioBuffers: ArrayBuffer[] = []
+    const audioPlayQueue = queue(async (task: AudioPlayTask, _) => {
+      audioBuffers.push(task.audioData)
+      const tempAudioBlob = exportBufferInWav(SAMPLE_RATE, 1, task.audioData)
+      const tempAudioUrl = URL.createObjectURL(tempAudioBlob)
+      await new Promise<void>((resolve) => {
+        const audio = new Audio(tempAudioUrl)
+        audio.onended = () => {
+          URL.revokeObjectURL(tempAudioUrl)
+          resolve()
+        }
+        audio.play()
+      })
+    }, 1)
+    const speechSynthesisQueue = queue(async (task: SpeechSynthesisTask, _) => {
       if (task.text.trim() === '') {
         return
       }
-      const audioData = await generateSpeech(speechSynthesizer, task.text, 'en-US')
+      try {
+        const audioData = await generateSpeech(speechSynthesizer, task.text, 'en-US')
+        audioPlayQueue.push({ audioData })
+      } catch (e) {
+        console.error('Error generating speech', e)
+        return
+      }
     }, 1)
     try {
       while (!done) {
         const { value, done: doneReading } = await reader.read()
         done = doneReading
         const chunkValue = decoder.decode(value)
-        if (chunkValue.trim() === PAUSE_TOKEN) {
-          q.push({ text: lastMessage.substring(lastPauseIndex) })
-          lastPauseIndex = lastMessage.length
-        } else {
-          lastMessage += chunkValue
+        lastMessage += chunkValue
+        const pauseIndex = lastMessage.lastIndexOf(PAUSE_TOKEN)
+        if (pauseIndex > lastPauseIndex) {
+          speechSynthesisQueue.push({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
+          lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
         }
 
         setHistory([...newHistory, new ChatMessage(lastMessage, true)])
         setLoading(false)
         setStreaming(true)
       }
-      q.push({ text: lastMessage.substring(lastPauseIndex) })
-      await q.drain()
+      speechSynthesisQueue.push({ text: lastMessage.substring(lastPauseIndex) })
+      await speechSynthesisQueue.drain()
+      await Promise.all([audioPlayQueue.drain(), await releaseOutputAudioResources()])
+      const audioBlob = exportBuffersInWav(SAMPLE_RATE, 1, audioBuffers)
+      const audioUrl = URL.createObjectURL(audioBlob)
+      setHistory([...newHistory, new AudioChatMessage(lastMessage, true, audioUrl)])
     } catch (e) {
       console.error('Error while reading LLM response', e)
       setLoading(false)
@@ -124,84 +148,87 @@ export default function Chat() {
   }
 
   const startRecording = async () => {
-    setBootstrappingAudio(true)
+    setConfiguringAudio(true)
     if (!audioStreamRef.current) {
       try {
         audioStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true })
       } catch (e) {
         console.error('Error getting audio stream', e)
-        setBootstrappingAudio(false)
+        setConfiguringAudio(false)
         return
       }
     }
     if (!audioContextRef.current) {
-      // Azure Speech SDK accepts 16kHz mono PCM by default
-      const audioContext = (audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE }))
-      const source = audioContext.createMediaStreamSource(audioStreamRef.current)
-      await audioContext.audioWorklet.addModule('audio/mono-processor.js')
-      const processorNode = new AudioWorkletNode(audioContext, 'MonoProcessor')
-      const buffers: Int16Array[][] = (audioBuffersRef.current = [])
-      const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream())
-      processorNode.port.onmessage = (event) => {
-        switch (event.data.type) {
-          case 'interm':
-            buffers.push(event.data.buffer)
-            break
-          case 'final':
-            pushStream.write(new Int16Array(event.data.outputChannel).buffer)
-            break
-        }
+      // Azure accepts 16kHz 16-bit mono PCM by default
+      audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE })
+      await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
+    }
+    const audioContext = audioContextRef.current
+    const source = audioContext.createMediaStreamSource(audioStreamRef.current)
+    const processorNode = new AudioWorkletNode(audioContext, 'MonoProcessor')
+    const buffers: Int16Array[][] = (audioBuffersRef.current = [])
+    const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream())
+    processorNode.port.onmessage = (event) => {
+      switch (event.data.type) {
+        case 'interm':
+          buffers.push(event.data.buffer)
+          break
+        case 'final':
+          pushStream.write(new Int16Array(event.data.outputChannel).buffer)
+          break
       }
-      const audioConfig = AudioConfig.fromStreamInput(pushStream)
-      try {
-        const speechConfig = await getSpeechConfig()
-        speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
-      } catch (e) {
-        releaseAudioResources()
-        setBootstrappingAudio(false)
-        return
-      }
-      const speechRecognizer = speechRecognizerRef.current
+    }
+    const audioConfig = AudioConfig.fromStreamInput(pushStream)
+    try {
+      const speechConfig = await getSpeechConfig()
+      speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
+    } catch (e) {
+      await releaseInputAudioResources()
+      setConfiguringAudio(false)
+      return
+    }
+    const speechRecognizer = speechRecognizerRef.current
 
-      lastMessageRef.current = ''
-      speechRecognizer.recognized = (_, event) => {
-        let result = event.result
-        switch (result.reason) {
-          case ResultReason.RecognizedSpeech:
-            // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
-            if (lastMessageRef.current === '') {
-              lastMessageRef.current = result.text
-            } else {
-              lastMessageRef.current += ' ' + result.text
-            }
-            break
-          case ResultReason.NoMatch:
-            console.log('Speech could not be recognized.')
-            break
-          case ResultReason.Canceled:
-            const cancellation = CancellationDetails.fromResult(result)
-            console.log(`Speech recognization canceled: ${cancellation.reason}`)
+    lastMessageRef.current = ''
+    speechRecognizer.recognized = (_, event) => {
+      let result = event.result
+      switch (result.reason) {
+        case ResultReason.RecognizedSpeech:
+          // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
+          if (lastMessageRef.current === '') {
+            lastMessageRef.current = result.text
+          } else {
+            lastMessageRef.current += ' ' + result.text
+          }
+          break
+        case ResultReason.NoMatch:
+          console.log('Speech could not be recognized.')
+          break
+        case ResultReason.Canceled:
+          const cancellation = CancellationDetails.fromResult(result)
+          console.log(`Speech recognization canceled: ${cancellation.reason}`)
 
-            if (cancellation.reason == CancellationReason.Error) {
-              console.error(`Speech recognization error: ${cancellation.ErrorCode}, ${cancellation.errorDetails}`)
-            }
-            break
-        }
+          if (cancellation.reason == CancellationReason.Error) {
+            console.error(`Speech recognization error: ${cancellation.ErrorCode}, ${cancellation.errorDetails}`)
+          }
+          break
       }
-      source.connect(processorNode) // Start recording
-      setBootstrappingAudio(false)
-      setTranscribing(true)
-      try {
-        await startRecognition(speechRecognizer)
-      } catch (e) {
-        console.error('Error starting recognition', e)
-        releaseAudioResources()
-        setTranscribing(false)
-      }
+    }
+    source.connect(processorNode) // Start recording
+    setConfiguringAudio(false)
+    setTranscribing(true)
+    try {
+      await startRecognition(speechRecognizer)
+    } catch (e) {
+      console.error('Error starting recognition', e)
+      await releaseInputAudioResources()
+      setTranscribing(false)
     }
   }
 
   const stopRecording = async () => {
+    setTranscribing(false)
+    setConfiguringAudio(true)
     try {
       await stopRecognition(speechRecognizerRef.current)
     } catch (e) {
@@ -209,8 +236,8 @@ export default function Chat() {
     }
     const audioBlob = exportAudioInWav(SAMPLE_RATE, audioBuffersRef.current)
     const audioUrl = URL.createObjectURL(audioBlob)
-    releaseAudioResources()
-    setTranscribing(false)
+    await releaseInputAudioResources()
+    setConfiguringAudio(false)
 
     const lastMessage = lastMessageRef.current
     lastMessageRef.current = ''
@@ -221,9 +248,9 @@ export default function Chat() {
     }
   }
 
-  const releaseAudioResources = () => {
+  const releaseInputAudioResources = async () => {
     audioBuffersRef.current = []
-    audioContextRef.current?.close()
+    await audioContextRef.current?.close()
     audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
@@ -231,6 +258,11 @@ export default function Chat() {
     pushAudioInputStreamRef.current = null
     speechRecognizerRef.current?.close()
     speechRecognizerRef.current = null
+  }
+
+  const releaseOutputAudioResources = async () => {
+    speechSynthesizerRef.current?.close()
+    speechSynthesizerRef.current = null
   }
 
   return (
@@ -248,7 +280,7 @@ export default function Chat() {
       <ChatInput
         isLoading={isLoading}
         isStreaming={isStreaming}
-        isBootstrappingAudio={isBootstrappingAudio}
+        isConfiguringAudio={isConfiguringAudio}
         isTranscribing={isTranscribing}
         startRecording={startRecording}
         stopRecording={stopRecording}

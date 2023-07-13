@@ -73,8 +73,10 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
     speechSynthesizer.speakSsmlAsync(
       `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">
         <voice name="en-US-JennyNeural">
-          <mstts:express-as style="chat">
-            ${text}
+          <mstts:express-as style="cheerful">
+            <prosody rate="+25.00%">
+              ${text}
+            </prosody>
           </mstts:express-as>
         </voice>
       </speak>`,
