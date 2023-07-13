@@ -5,6 +5,15 @@ import { useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import {
+  SpeechSynthesisTask,
+  generateSpeech,
+  getSpeechConfig,
+  startRecognition,
+  stopRecognition,
+} from '@/app/utils/azure-speech'
+import { exportAudioInWav } from '@/app/utils/audio'
+import { queue } from 'async'
+import {
   AudioConfig,
   AudioInputStream,
   CancellationDetails,
@@ -15,9 +24,6 @@ import {
   SpeechSynthesisOutputFormat,
   SpeechSynthesizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
-import { SpeechSynthesisTask, generateSpeech, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
-import { exportAudioInWav } from '@/app/utils/audio'
-import { queue } from 'async'
 
 const SAMPLE_RATE = 16000
 
@@ -74,10 +80,15 @@ export default function Chat() {
     const reader = response.body.getReader()
     const decoder = new TextDecoder()
     let done = false
-    let lastMessage = ''
+    let lastMessage = '',
+      lastPauseIndex = 0
     speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Riff24Khz16BitMonoPcm
     const speechSynthesizer = new SpeechSynthesizer(speechConfig, AudioConfig.fromDefaultSpeakerOutput())
     const q = queue(async (task: SpeechSynthesisTask, callback) => {
+      console.log('Generating speech for', task.text)
+      if (task.text.trim() === '') {
+        return
+      }
       const audioData = await generateSpeech(speechSynthesizer, task.text, 'en-US')
     }, 1)
     try {
@@ -86,7 +97,8 @@ export default function Chat() {
         done = doneReading
         const chunkValue = decoder.decode(value)
         if (chunkValue.trim() === PAUSE_TOKEN) {
-          await q.push({ text: lastMessage })
+          q.push({ text: lastMessage.substring(lastPauseIndex) })
+          lastPauseIndex = lastMessage.length
         } else {
           lastMessage += chunkValue
         }
@@ -95,6 +107,7 @@ export default function Chat() {
         setLoading(false)
         setStreaming(true)
       }
+      q.push({ text: lastMessage.substring(lastPauseIndex) })
       await q.drain()
     } catch (e) {
       console.error('Error while reading LLM response', e)

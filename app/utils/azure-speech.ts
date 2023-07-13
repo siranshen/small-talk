@@ -71,7 +71,7 @@ export interface SpeechSynthesisTask {
 export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text: string, lang: string): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
-      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="${lang}">
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">
         <voice name="en-US-JennyNeural">
           <mstts:express-as style="chat">
             ${text}
@@ -79,9 +79,11 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
         </voice>
       </speak>`,
       (result) => {
+        console.log('Speech synthesis result', result)
         resolve(result.audioData)
       },
       (err) => {
+        console.log('Speech synthesis error', err)
         reject(err)
       }
     )
