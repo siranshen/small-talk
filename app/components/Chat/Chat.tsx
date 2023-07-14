@@ -131,8 +131,9 @@ export default function Chat() {
       await speechSynthesisQueue.drain()
       await Promise.all([audioPlayQueue.drain(), await releaseOutputAudioResources()])
       const audioBlob = exportBuffersInWav(SAMPLE_RATE, 1, audioBuffers)
-      const audioUrl = URL.createObjectURL(audioBlob)
-      setHistory([...newHistory, new AudioChatMessage(lastMessage, true, audioUrl)])
+      const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
+      await newAudioMessage.loadAudioMetadata()
+      setHistory([...newHistory, newAudioMessage])
     } catch (e) {
       console.error('Error while reading LLM response', e)
       setLoading(false)
@@ -235,14 +236,15 @@ export default function Chat() {
       console.error('Error stopping recognition', e)
     }
     const audioBlob = exportAudioInWav(SAMPLE_RATE, audioBuffersRef.current)
-    const audioUrl = URL.createObjectURL(audioBlob)
     await releaseInputAudioResources()
     setConfiguringAudio(false)
 
     const lastMessage = lastMessageRef.current
     lastMessageRef.current = ''
     if (lastMessage.trim()) {
-      const newHistory = [...history, new AudioChatMessage(lastMessage, false, audioUrl)]
+      const newAudioMessage = new AudioChatMessage(lastMessage, false, audioBlob)
+      await newAudioMessage.loadAudioMetadata()
+      const newHistory = [...history, newAudioMessage]
       setHistory(newHistory)
       await generateResponse(newHistory)
     }

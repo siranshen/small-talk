@@ -114,6 +114,53 @@ function interleave(leftChannel: Int16Array, rightChannel: Int16Array): Int16Arr
   return result
 }
 
+export interface AudioMetadata {
+  duration: number
+  volumeBins: number[]
+}
+
+export function getMetadataFromWav(audio: Blob, numBins: number): Promise<AudioMetadata> {
+  return new Promise<AudioMetadata>((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => {
+      const view = new DataView(reader.result as ArrayBuffer)
+      const channelCount = view.getUint16(22, true),
+        sampleRate = view.getUint32(24, true),
+        numSamples = view.getUint32(40, true) / 2
+      const duration = numSamples / channelCount / sampleRate
+
+      // Calculate average over each bin
+      const numSamplesPerBin = (numSamples + numBins - 1) / numBins
+      const volumeBins: number[] = new Array(numBins)
+      for (let i = 0, bin = 0; i < numSamples; i += numSamplesPerBin, bin++) {
+        const len = Math.min(numSamplesPerBin, numSamples - i)
+        let sumSquares = 0
+        for (let j = 0; j < len; j++) {
+          const val = pcm16BitToFloat(view.getInt16(44 + i * 2, true))
+          sumSquares += val * val
+        }
+        // Calculates the RMS
+        volumeBins[bin] = Math.sqrt(sumSquares / len)
+      }
+      // Apply exponential moving average
+      const smoothingFactor = 0.2
+      const smoothedVolumeBins: number[] = new Array(numBins)
+      smoothedVolumeBins[0] = volumeBins[0]
+      for (let i = 1; i < numBins; i++) {
+        const average = smoothingFactor * smoothedVolumeBins[i - 1] + (1 - smoothingFactor) * volumeBins[i]
+        smoothedVolumeBins[i] = average
+      }
+      resolve({ duration, volumeBins: smoothedVolumeBins })
+    }
+    reader.onerror = reject
+    reader.readAsArrayBuffer(audio)
+  })
+}
+
+function pcm16BitToFloat(intValue: number) {
+  return intValue < 0 ? intValue / 0x8000 : intValue / 0x7fff
+}
+
 export interface AudioPlayTask {
   audioData: ArrayBuffer
 }

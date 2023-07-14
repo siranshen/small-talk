@@ -18,7 +18,7 @@ export function ChatLineGroup({ message }: { message: ChatMessage }) {
   const isAudio = message.getType() === 'audio'
   return (
     <ChatLineGroupLayout isAi={isAi}>
-      {isAudio && <ChatLine isAi={isAi} isAudio content={(message as AudioChatMessage).getAudioSrc()} />}
+      {isAudio && <ChatLine isAi={isAi} isAudio message={(message as AudioChatMessage)} />}
       <ChatLine isAi={isAi} isAudio={false} content={message.getText()} />
     </ChatLineGroupLayout>
   )
