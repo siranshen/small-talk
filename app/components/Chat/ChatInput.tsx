@@ -42,7 +42,6 @@ export default function ChatInput({
       e.preventDefault()
       if (
         !input ||
-        messageStates.isLoading ||
         messageStates.isStreaming ||
         messageStates.isConfiguringAudio ||
         messageStates.isTranscribing
@@ -83,7 +82,7 @@ export default function ChatInput({
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
           <button
             id='mic-btn'
-            disabled={messageStates.isLoading || messageStates.isStreaming || messageStates.isConfiguringAudio}
+            disabled={messageStates.isStreaming || messageStates.isConfiguringAudio}
             onClick={() => (messageStates.isTranscribing ? stopRecording() : startRecording())}
             className={`${messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
           >
@@ -110,7 +109,7 @@ export default function ChatInput({
           >
             <TooltipItem
               icon={<DocsIcon width={16} height={16} alt='' />}
-              text={messageStates.shouldShowAiText ? 'Hide text' : 'Show text'}
+              text={messageStates.shouldShowAiText ? 'Hide AI text' : 'Show AI text'}
               onClick={() => setShowText(!messageStates.shouldShowAiText)}
             />
             <TooltipItem

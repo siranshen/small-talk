@@ -1,7 +1,7 @@
 'use client'
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
-import { use, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import { SpeechSynthesisTaskProcessor, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
@@ -32,7 +32,6 @@ export default function Chat() {
   const lastMessageRef = useRef<string>('')
   const [isConfiguringAudio, setConfiguringAudio] = useState<boolean>(false)
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
-  const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
   const [shouldShowAiText, setShowText] = useState<boolean>(true)
 
@@ -52,7 +51,8 @@ export default function Chat() {
   }, [history])
 
   const generateResponse = async (newHistory: ChatMessage[]) => {
-    setLoading(true)
+    setStreaming(true)
+    setHistory([...newHistory, new ChatMessage('', true, true)])
     let response, speechConfig
     try {
       const llmCallPromise = fetch('/api/openai', {
@@ -75,7 +75,8 @@ export default function Chat() {
       }
     } catch (e) {
       console.error('Error generating response', e)
-      setLoading(false)
+      setStreaming(false)
+      setHistory([...newHistory]) // Remove the loading message
       return
     }
 
@@ -102,12 +103,7 @@ export default function Chat() {
           speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
           lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
         }
-
-        if (shouldShowAiText) {
-          setHistory([...newHistory, new ChatMessage(lastMessage, true)])
-          setLoading(false)
-          setStreaming(true)
-        }
+        setHistory([...newHistory, new ChatMessage(lastMessage, true, true)])
       }
       speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
       const audioBlob = await speechSynthesisTaskProcessor.finish()
@@ -118,7 +114,6 @@ export default function Chat() {
       console.error('Error while reading LLM response', e)
     }
     await releaseOutputAudioResources()
-    setLoading(false)
     setStreaming(false)
   }
 
@@ -204,7 +199,6 @@ export default function Chat() {
   }
 
   const stopRecording = async () => {
-    setTranscribing(false)
     setConfiguringAudio(true)
     try {
       await stopRecognition(speechRecognizerRef.current)
@@ -213,6 +207,7 @@ export default function Chat() {
     }
     const audioBlob = exportAudioInWav(SAMPLE_RATE, audioBuffersRef.current)
     await releaseInputAudioResources()
+    setTranscribing(false)
     setConfiguringAudio(false)
 
     const lastMessage = lastMessageRef.current
@@ -227,15 +222,15 @@ export default function Chat() {
   }
 
   const releaseInputAudioResources = async () => {
-    audioBuffersRef.current = []
-    await audioContextRef.current?.close()
-    audioContextRef.current = null
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
+    await audioContextRef.current?.close()
+    audioContextRef.current = null
     pushAudioInputStreamRef.current?.close()
     pushAudioInputStreamRef.current = null
     speechRecognizerRef.current?.close()
     speechRecognizerRef.current = null
+    audioBuffersRef.current = []
   }
 
   const releaseOutputAudioResources = async () => {
@@ -251,12 +246,11 @@ export default function Chat() {
             <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
           ))}
           {isTranscribing && <LoadingChatLineGroup isAi={false} />}
-          {isLoading && <LoadingChatLineGroup isAi />}
           <div className='clear-both h-32'></div>
         </div>
       </div>
       <ChatInput
-        messageStates={{ isConfiguringAudio, isTranscribing, isLoading, isStreaming, shouldShowAiText }}
+        messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText }}
         startRecording={startRecording}
         stopRecording={stopRecording}
         sendTextMessage={sendText}

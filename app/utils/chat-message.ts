@@ -7,11 +7,15 @@ export class ChatMessage {
   private id: string = uuidv4()
   // The actual text that will be sent to the AI
   private llmText: string
+  private streaming: boolean = false
 
-  constructor(text: string, isAi: boolean) {
+  constructor(text: string, isAi: boolean, isStreaming?: boolean) {
     this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '')
     this.llmText = text
     this.isAi = isAi
+    if (isStreaming) {
+      this.streaming = isStreaming
+    }
   }
 
   getType(): string {
@@ -28,6 +32,10 @@ export class ChatMessage {
 
   getText(): string {
     return this.text
+  }
+
+  isStreaming(): boolean {
+    return this.streaming
   }
 
   toGPTMessage(): GPTMessage {
@@ -77,7 +85,6 @@ export interface GPTMessage {
 }
 
 export interface messageStates {
-  isLoading: boolean
   isStreaming: boolean
   isConfiguringAudio: boolean
   isTranscribing: boolean
