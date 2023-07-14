@@ -1,4 +1,6 @@
+import { QueueObject, queue } from 'async'
 import { SpeechConfig, SpeechRecognizer, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'
+import { AudioPlayTask, exportBufferInWav, exportBuffersInWav } from './audio'
 
 export async function startRecognition(speechRecognizer: SpeechRecognizer | null): Promise<void> {
   if (!speechRecognizer) {
@@ -72,9 +74,9 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
       `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">
-        <voice name="en-US-JennyNeural">
+        <voice name="en-US-GuyNeural">
           <mstts:express-as style="cheerful">
-            <prosody rate="+25.00%">
+            <prosody rate="+10.00%">
               ${text}
             </prosody>
           </mstts:express-as>
@@ -90,4 +92,55 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
       }
     )
   })
+}
+
+export class SpeechSynthesisTaskProcessor {
+  private speechSynthesizer: SpeechSynthesizer 
+  private audioBuffers: ArrayBuffer[] = []
+  private sampleRate: number
+  private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
+  private speechSynthesisQueue: QueueObject<SpeechSynthesisTask> | null = null
+
+  constructor(speechSynthesizer: SpeechSynthesizer, sampleRate: number) {
+    this.speechSynthesizer = speechSynthesizer
+    this.sampleRate = sampleRate
+  }
+
+  start(): void {
+    this.audioPlayQueue = queue(async (task: AudioPlayTask, _) => {
+      this.audioBuffers.push(task.audioData)
+      const tempAudioBlob = exportBufferInWav(this.sampleRate, 1, task.audioData)
+      const tempAudioUrl = URL.createObjectURL(tempAudioBlob)
+      await new Promise<void>((resolve) => {
+        const audio = new Audio(tempAudioUrl)
+        audio.onended = () => {
+          URL.revokeObjectURL(tempAudioUrl)
+          resolve()
+        }
+        audio.play()
+      })
+    }, 1)
+    this.speechSynthesisQueue = queue(async (task: SpeechSynthesisTask, _) => {
+      if (task.text.trim() === '') {
+        return
+      }
+      try {
+        const audioData = await generateSpeech(this.speechSynthesizer, task.text, 'en-US')
+        this.audioPlayQueue?.push({ audioData })
+      } catch (e) {
+        console.error('Error generating speech', e)
+        return
+      }
+    }, 1)
+  }
+
+  async pushTask(task: SpeechSynthesisTask): Promise<void> {
+    await this.speechSynthesisQueue?.push(task)
+  }
+
+  async finish(): Promise<Blob> {
+    await this.speechSynthesisQueue?.drain()
+    await this.audioPlayQueue?.drain()
+    return exportBuffersInWav(this.sampleRate, 1, this.audioBuffers)
+  }
 }

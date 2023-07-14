@@ -1,23 +1,15 @@
 'use client'
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
-import { useEffect, useRef, useState } from 'react'
+import { use, useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
-import {
-  SpeechSynthesisTask,
-  generateSpeech,
-  getSpeechConfig,
-  startRecognition,
-  stopRecognition,
-} from '@/app/utils/azure-speech'
-import { AudioPlayTask, exportAudioInWav, exportBufferInWav, exportBuffersInWav } from '@/app/utils/audio'
-import { queue } from 'async'
+import { SpeechSynthesisTaskProcessor, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
+import { exportAudioInWav } from '@/app/utils/audio'
 import {
   AudioConfig,
   AudioInputStream,
   CancellationDetails,
-  CancellationReason,
   PushAudioInputStream,
   ResultReason,
   SpeechRecognizer,
@@ -42,6 +34,15 @@ export default function Chat() {
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isLoading, setLoading] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
+  const [shouldShowAiText, setShowText] = useState<boolean>(true)
+
+  useEffect(() => {
+    setShowText(localStorage.getItem('shouldShowAiText') === 'true')
+  }, [])
+
+  useEffect(() => {
+    localStorage.setItem('shouldShowAiText', shouldShowAiText ? 'true' : 'false')
+  }, [shouldShowAiText])
 
   useEffect(() => {
     if (!chatContainerRef.current) {
@@ -84,33 +85,12 @@ export default function Chat() {
     let lastMessage = '',
       lastPauseIndex = 0
     speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm
-    const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(speechConfig))
-    const audioBuffers: ArrayBuffer[] = []
-    const audioPlayQueue = queue(async (task: AudioPlayTask, _) => {
-      audioBuffers.push(task.audioData)
-      const tempAudioBlob = exportBufferInWav(SAMPLE_RATE, 1, task.audioData)
-      const tempAudioUrl = URL.createObjectURL(tempAudioBlob)
-      await new Promise<void>((resolve) => {
-        const audio = new Audio(tempAudioUrl)
-        audio.onended = () => {
-          URL.revokeObjectURL(tempAudioUrl)
-          resolve()
-        }
-        audio.play()
-      })
-    }, 1)
-    const speechSynthesisQueue = queue(async (task: SpeechSynthesisTask, _) => {
-      if (task.text.trim() === '') {
-        return
-      }
-      try {
-        const audioData = await generateSpeech(speechSynthesizer, task.text, 'en-US')
-        audioPlayQueue.push({ audioData })
-      } catch (e) {
-        console.error('Error generating speech', e)
-        return
-      }
-    }, 1)
+    const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(
+      speechConfig,
+      null as unknown as AudioConfig
+    ))
+    const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE)
+    speechSynthesisTaskProcessor.start()
     try {
       while (!done) {
         const { value, done: doneReading } = await reader.read()
@@ -119,25 +99,26 @@ export default function Chat() {
         lastMessage += chunkValue
         const pauseIndex = lastMessage.lastIndexOf(PAUSE_TOKEN)
         if (pauseIndex > lastPauseIndex) {
-          speechSynthesisQueue.push({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
+          speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
           lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
         }
 
-        setHistory([...newHistory, new ChatMessage(lastMessage, true)])
-        setLoading(false)
-        setStreaming(true)
+        if (shouldShowAiText) {
+          setHistory([...newHistory, new ChatMessage(lastMessage, true)])
+          setLoading(false)
+          setStreaming(true)
+        }
       }
-      speechSynthesisQueue.push({ text: lastMessage.substring(lastPauseIndex) })
-      await speechSynthesisQueue.drain()
-      await Promise.all([audioPlayQueue.drain(), await releaseOutputAudioResources()])
-      const audioBlob = exportBuffersInWav(SAMPLE_RATE, 1, audioBuffers)
+      speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
+      const audioBlob = await speechSynthesisTaskProcessor.finish()
       const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
       await newAudioMessage.loadAudioMetadata()
       setHistory([...newHistory, newAudioMessage])
     } catch (e) {
       console.error('Error while reading LLM response', e)
-      setLoading(false)
     }
+    await releaseOutputAudioResources()
+    setLoading(false)
     setStreaming(false)
   }
 
@@ -206,12 +187,7 @@ export default function Chat() {
           console.log('Speech could not be recognized.')
           break
         case ResultReason.Canceled:
-          const cancellation = CancellationDetails.fromResult(result)
-          console.log(`Speech recognization canceled: ${cancellation.reason}`)
-
-          if (cancellation.reason == CancellationReason.Error) {
-            console.error(`Speech recognization error: ${cancellation.ErrorCode}, ${cancellation.errorDetails}`)
-          }
+          console.log(`Speech recognization canceled: ${CancellationDetails.fromResult(result)}`)
           break
       }
     }
@@ -272,7 +248,7 @@ export default function Chat() {
       <div className='h-full'>
         <div className='max-w-[650px] my-0 mx-auto p-3'>
           {history.map((msg) => (
-            <ChatLineGroup key={msg.getId()} message={msg} />
+            <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
           ))}
           {isTranscribing && <LoadingChatLineGroup isAi={false} />}
           {isLoading && <LoadingChatLineGroup isAi />}
@@ -280,13 +256,11 @@ export default function Chat() {
         </div>
       </div>
       <ChatInput
-        isLoading={isLoading}
-        isStreaming={isStreaming}
-        isConfiguringAudio={isConfiguringAudio}
-        isTranscribing={isTranscribing}
+        messageStates={{ isConfiguringAudio, isTranscribing, isLoading, isStreaming, shouldShowAiText }}
         startRecording={startRecording}
         stopRecording={stopRecording}
         sendTextMessage={sendText}
+        setShowText={setShowText}
       />
     </div>
   )

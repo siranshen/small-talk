@@ -60,7 +60,7 @@ export function ChatLine({
     if (!audioMetadata) {
       return
     }
-    const pos = curAudioTime / audioMetadata.duration
+    const pos = Math.min(curAudioTime / audioMetadata.duration, 1)
     const ctx = canvasRef.current.getContext('2d')
     if (!ctx) {
       return
@@ -73,7 +73,6 @@ export function ChatLine({
     lineargradient.addColorStop(pos, audioPlayedColor)
     lineargradient.addColorStop(pos, audioUnplayedColor)
     lineargradient.addColorStop(1, audioUnplayedColor)
-    console.log(pos, curAudioTime)
     ctx.strokeStyle = lineargradient
     ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
     const midY = CANVAS_HEIGHT / 2

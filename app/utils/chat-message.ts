@@ -2,14 +2,13 @@ import { v4 as uuidv4 } from 'uuid'
 import { AudioMetadata, getMetadataFromWav } from './audio'
 
 export class ChatMessage {
+  private text: string
+  private isAi: boolean
   private id: string = uuidv4()
   // The actual text that will be sent to the AI
   private llmText: string
 
-  constructor(
-    private text: string,
-    private isAi: boolean
-  ) {
+  constructor(text: string, isAi: boolean) {
     this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '')
     this.llmText = text
     this.isAi = isAi
@@ -42,14 +41,11 @@ export class ChatMessage {
 export const AUDIO_VOLUMN_BIN_COUNT = 38
 
 export class AudioChatMessage extends ChatMessage {
-  private audioSrc
+  private audio: Blob
+  private audioSrc: string
   private audioMetadata: AudioMetadata | null = null
 
-  constructor(
-    text: string,
-    isAi: boolean,
-    private audio: Blob
-  ) {
+  constructor(text: string, isAi: boolean, audio: Blob) {
     super(text, isAi)
     this.audio = audio
     // TODO Might have to be managed in a central place so it can revoked when the chat goes away
@@ -78,6 +74,14 @@ export class AudioChatMessage extends ChatMessage {
 export interface GPTMessage {
   role: 'system' | 'assistant' | 'user'
   content: string
+}
+
+export interface messageStates {
+  isLoading: boolean
+  isStreaming: boolean
+  isConfiguringAudio: boolean
+  isTranscribing: boolean
+  shouldShowAiText: boolean
 }
 
 export const PAUSE_TOKEN = '§'

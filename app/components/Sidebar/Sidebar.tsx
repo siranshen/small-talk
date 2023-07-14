@@ -1,9 +1,11 @@
 'use client'
 
+import GithubLogo from '@/public/icons/github-mark.svg'
 import Logo from '@/public/icons/logo.svg'
 import { useState } from 'react'
 import SidebarToggleButton from './SidebarToggleButton'
 import SidebarLabeledInput from './SidebarLabeledInput'
+import Link from 'next/link'
 
 export default function Sidebar() {
   const [isOpen, setOpen] = useState<boolean>(false)
@@ -31,26 +33,17 @@ export default function Sidebar() {
             <span>SmallTalk</span>
           </div>
 
-          <div className='mb-4 leading-6'>
-            Welcome to SmallTalk (TBD 😅)! This is where you get to practice your foreign or second language skills with an AI.
-          </div>
-          <div className='mb-4 leading-6'>Please enter your API settings below to get started.</div>
-          <div className='mb-4 leading-6'>
-            <div className='font-[600] before:content-["▶_"]'>OpenAI</div>
-            <SidebarLabeledInput label='API Key' inputId='openai-key' inputType='password' placeholder='sk-xxxxxxx' />
-            <SidebarLabeledInput label='Model' inputId='openai-model' inputType='text' placeholder='gpt-3.5-turbo-0613' />
-            <SidebarLabeledInput label='Org' inputId='openai-org' inputType='text' placeholder='org-xxxxxx' />
-          </div>
-          <div className='mb-4 leading-6'>
-            <div className='font-[600] before:content-["▶_"]'>Azure Speech</div>
-            <SidebarLabeledInput label='API Key' inputId='azure-key' inputType='password' placeholder='xxxxxxxxxx' />
-            <SidebarLabeledInput label='Region' inputId='azure-region' inputType='text' placeholder='eastasia' />
-          </div>
-          <div className='mb-4 leading-6'>
-            <div className='flex justify-around mt-1'>
-              <button className='flex-[0_1_90%] solid-button'>Save Locally</button>
+          <div className='flex-grow'>
+            <div className='mb-4 leading-6'>
+              Welcome to SmallTalk (TBD 😅)! This is where you get to practice your foreign or second language skills with an
+              AI.
+            </div>
+            <div className='mb-4 leading-6'>This project is still being actively worked on. Stay tuned!</div>
+            <div className='mb-4 leading-6'>
+              <span className='font-[600]'>Upcoming</span>: I18n support so you can learn any of your fav language.
             </div>
           </div>
+          <footer className='border-t pt-4'><Link href='https://github.com/siranshen/small-talk' target='_blank' className='flex justify-center'><GithubLogo width={24} height={24} className='mr-2' /><span>Check it out on Github!</span></Link></footer>
         </div>
       </div>
     </>

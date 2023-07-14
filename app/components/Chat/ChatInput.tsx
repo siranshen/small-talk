@@ -6,10 +6,14 @@ import PlusIcon from '@/public/icons/plus.svg'
 import TrashbinIcon from '@/public/icons/trashbin.svg'
 import { useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.css'
+import { messageStates } from '@/app/utils/chat-message'
 
-function TooltipItem({ icon, text }: { icon: JSX.Element; text: string }) {
+function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: Function }) {
   return (
-    <button className='border-none rounded-md bg-white px-2 py-1 text-left text-sm text-inherit flex items-center hover:bg-gray-100'>
+    <button
+      className='border-none rounded-md bg-white px-2 py-1 text-left text-sm text-inherit flex items-center hover:bg-gray-100'
+      onClick={() => onClick()}
+    >
       <span className='h-4 mr-2'>{icon}</span>
       {text}
     </button>
@@ -17,21 +21,17 @@ function TooltipItem({ icon, text }: { icon: JSX.Element; text: string }) {
 }
 
 export default function ChatInput({
-  isLoading,
-  isStreaming,
-  isConfiguringAudio,
-  isTranscribing,
+  messageStates,
   startRecording,
   stopRecording,
   sendTextMessage,
+  setShowText,
 }: {
-  isLoading: boolean
-  isStreaming: boolean
-  isConfiguringAudio: boolean
-  isTranscribing: boolean
+  messageStates: messageStates
   startRecording: Function
   stopRecording: Function
   sendTextMessage: Function
+  setShowText: Function
 }) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [input, setInput] = useState<string>('')
@@ -40,7 +40,13 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || isLoading || isStreaming || isConfiguringAudio || isTranscribing) {
+      if (
+        !input ||
+        messageStates.isLoading ||
+        messageStates.isStreaming ||
+        messageStates.isConfiguringAudio ||
+        messageStates.isTranscribing
+      ) {
         return
       }
       sendTextMessage(input)
@@ -77,13 +83,13 @@ export default function ChatInput({
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
           <button
             id='mic-btn'
-            disabled={isLoading || isStreaming || isConfiguringAudio}
-            onClick={() => (isTranscribing ? stopRecording() : startRecording())}
-            className={`${isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
+            disabled={messageStates.isLoading || messageStates.isStreaming || messageStates.isConfiguringAudio}
+            onClick={() => (messageStates.isTranscribing ? stopRecording() : startRecording())}
+            className={`${messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
           >
-            {isConfiguringAudio ? (
+            {messageStates.isConfiguringAudio ? (
               <MicLoading width={16} height={16} alt='loading' />
-            ) : isTranscribing ? (
+            ) : messageStates.isTranscribing ? (
               <MicStopIcon width={16} height={16} alt='stop' />
             ) : (
               <MicIcon width={16} height={16} alt='mic' />
@@ -102,8 +108,16 @@ export default function ChatInput({
               isTooltipOpen ? '' : 'opacity-0 scale-0'
             } absolute bottom-[100%] right-4 z-30 mb-2 rounded-lg rounded-br-none bg-white border border-solid border-zinc-200 shadow-[0_0_10px_rgba(0,0,0,.1)] hover:shadow-[0_0_10px_rgba(0,0,0,.15)] w-[160px] flex flex-col p-2 origin-bottom-right transition-all duration-300`}
           >
-            <TooltipItem icon={<DocsIcon width={16} height={16} alt='' />} text='Show text' />
-            <TooltipItem icon={<TrashbinIcon width={16} height={16} alt='' />} text='Clear talk' />
+            <TooltipItem
+              icon={<DocsIcon width={16} height={16} alt='' />}
+              text={messageStates.shouldShowAiText ? 'Hide text' : 'Show text'}
+              onClick={() => setShowText(!messageStates.shouldShowAiText)}
+            />
+            <TooltipItem
+              icon={<TrashbinIcon width={16} height={16} alt='' />}
+              text='Clear talk'
+              onClick={() => window.location.reload()}
+            />
           </div>
         </div>
       </div>

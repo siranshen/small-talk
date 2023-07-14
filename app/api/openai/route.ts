@@ -3,7 +3,7 @@ import { ParsedEvent, ReconnectInterval, createParser } from 'eventsource-parser
 import { NextRequest, NextResponse } from 'next/server'
 
 const URL = 'https://api.openai.com/v1/chat/completions'
-const SYSTEM_PROMPT = `You are an English native speaker, talking to a person that is a non-native speaker.
+const SYSTEM_PROMPT = `You are Guy, a native English speaker, talking to a person that is a non-native speaker.
 Talk in an informal tone as a friend.
 Don't say too much at once.
 Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations. \

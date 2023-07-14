@@ -13,13 +13,13 @@ function ChatLineGroupLayout({ isAi, children }: { isAi: boolean; children: Reac
   )
 }
 
-export function ChatLineGroup({ message }: { message: ChatMessage }) {
+export function ChatLineGroup({ message, shouldShowAiText }: { message: ChatMessage, shouldShowAiText: boolean }) {
   const isAi = message.isAiMessage()
   const isAudio = message.getType() === 'audio'
   return (
     <ChatLineGroupLayout isAi={isAi}>
       {isAudio && <ChatLine isAi={isAi} isAudio message={(message as AudioChatMessage)} />}
-      <ChatLine isAi={isAi} isAudio={false} content={message.getText()} />
+      {(!isAi || shouldShowAiText) && <ChatLine isAi={isAi} isAudio={false} content={message.getText()} />}
     </ChatLineGroupLayout>
   )
 }
