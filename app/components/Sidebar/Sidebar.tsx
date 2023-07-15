@@ -28,7 +28,7 @@ export default function Sidebar() {
 
           <div className='text-2xl font-[800] my-4 mx-0 flex'>
             <div className='flex-[0_0_1.5rem] mr-3 flex items-center'>
-              <Logo alt='logo' />
+              <Logo alt='logo' width={24} height={24} />
             </div>
             <span>SmallTalk</span>
           </div>

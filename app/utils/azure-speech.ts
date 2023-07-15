@@ -95,7 +95,7 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
 }
 
 export class SpeechSynthesisTaskProcessor {
-  private speechSynthesizer: SpeechSynthesizer 
+  private speechSynthesizer: SpeechSynthesizer
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
@@ -111,13 +111,16 @@ export class SpeechSynthesisTaskProcessor {
       this.audioBuffers.push(task.audioData)
       const tempAudioBlob = exportBufferInWav(this.sampleRate, 1, task.audioData)
       const tempAudioUrl = URL.createObjectURL(tempAudioBlob)
+      const audio = new Audio(tempAudioUrl)
       await new Promise<void>((resolve) => {
-        const audio = new Audio(tempAudioUrl)
         audio.onended = () => {
           URL.revokeObjectURL(tempAudioUrl)
           resolve()
         }
-        audio.play()
+        audio.play().catch((e) => {
+          console.error('Error playing audio', e)
+          resolve()
+        })
       })
     }, 1)
     this.speechSynthesisQueue = queue(async (task: SpeechSynthesisTask, _) => {
