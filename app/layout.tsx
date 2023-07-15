@@ -1,10 +1,8 @@
 import './globals.css';
 import { Metadata } from 'next';
 
-export const siteTitle: string = 'SmallTalk';
-
 export const metadata: Metadata = {
-  title: siteTitle,
+  title: 'SmallTalk',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
