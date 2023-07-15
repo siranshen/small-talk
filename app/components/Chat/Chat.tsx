@@ -170,10 +170,20 @@ export default function Chat() {
     const speechRecognizer = speechRecognizerRef.current
 
     lastMessageRef.current = ''
+    speechRecognizer.sessionStarted = (_, event) => {
+      console.log('Starting to record', event.sessionId)
+    }
+    speechRecognizer.sessionStopped = (_, event) => {
+      console.log('Recording ended', event.sessionId)
+    }
+    speechRecognizer.recognizing = (_, event) => {
+      console.log('Recognizing', event.sessionId, ResultReason[event.result.reason], event.result.text)
+    }
     speechRecognizer.recognized = (_, event) => {
       let result = event.result
       switch (result.reason) {
         case ResultReason.RecognizedSpeech:
+          console.log('Sppech recognized', result.text)
           // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
           if (lastMessageRef.current === '') {
             lastMessageRef.current = result.text
@@ -187,6 +197,8 @@ export default function Chat() {
         case ResultReason.Canceled:
           console.log(`Speech recognization canceled: ${CancellationDetails.fromResult(result)}`)
           break
+        default:
+          console.log('Unknown recognition result received.', result)
       }
     }
     source.connect(processorNode) // Start recording
