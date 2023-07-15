@@ -154,6 +154,7 @@ export default function Chat() {
           buffers.push(event.data.buffer)
           break
         case 'final':
+          console.log('Received event', event.data.type)
           pushStream.write(new Int16Array(event.data.outputChannel).buffer)
           break
       }
