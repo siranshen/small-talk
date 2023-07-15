@@ -9,6 +9,7 @@ const CANVAS_HEIGHT = 48
 const MAX_BAR_HEIGHT = CANVAS_HEIGHT / 2
 const GAP_WIDTH = CANVAS_WIDTH / (AUDIO_VOLUMN_BIN_COUNT + 2)
 const LINE_WIDTH = 6
+const PROGRESS_WIDTH = CANVAS_WIDTH - GAP_WIDTH * 2 + LINE_WIDTH
 
 function ChatLineLayout({ isAi, children }: { isAi: boolean; children: React.ReactNode }) {
   return (
@@ -34,12 +35,15 @@ export function ChatLine({
   message?: AudioChatMessage
 }) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const waveCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const progressCanvasRef = useRef<HTMLCanvasElement | null>(null)
+  const requestAnimationFrameRef = useRef<number | null>(null)
   const [isPlaying, setIsPlaying] = useState<boolean>(false)
-  const [curAudioTime, setCurAudioTime] = useState<number>(0)
   // rgb(51,51,51) === #333
   const audioPlayedColor = isAi ? 'rgba(255,255,255,1)' : 'rgba(51,51,51,1)'
   const audioUnplayedColor = isAi ? 'rgba(255,255,255,0.6)' : 'rgba(51,51,51,0.6)'
+  // See --main-theme-color and --secondary-theme-color
+  const audioFillColor = isAi ? '#007aff' : '#f4f4f5'
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -47,34 +51,45 @@ export function ChatLine({
     }
     if (isPlaying) {
       audioRef.current.play()
+      const animate = () => {
+        if (!message || !progressCanvasRef.current || !audioRef.current) {
+          return
+        }
+        const audioMetadata = message.getAudioMetadata()
+        const ctx = progressCanvasRef.current.getContext('2d')
+        if (!audioMetadata || !ctx) {
+          return
+        }
+        // Draw progress
+        const progress = Math.min(audioRef.current.currentTime / audioMetadata.duration, 1)
+        ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+        ctx.fillStyle = audioPlayedColor
+        ctx.fillRect(GAP_WIDTH - LINE_WIDTH / 2, 0, PROGRESS_WIDTH * progress, CANVAS_HEIGHT)
+        requestAnimationFrameRef.current = requestAnimationFrame(animate)
+      }
+      animate()
     } else {
       audioRef.current.pause()
+      requestAnimationFrameRef.current && cancelAnimationFrame(requestAnimationFrameRef.current)
     }
-  }, [isPlaying])
+  }, [audioPlayedColor, isPlaying, message])
 
   useEffect(() => {
-    if (!message || !canvasRef.current || !audioRef.current) {
+    if (!message || !waveCanvasRef.current) {
       return
     }
     const audioMetadata = message.getAudioMetadata()
-    if (!audioMetadata) {
+    const ctx = waveCanvasRef.current.getContext('2d')
+    if (!audioMetadata || !ctx) {
       return
     }
-    const pos = Math.min(curAudioTime / audioMetadata.duration, 1)
-    const ctx = canvasRef.current.getContext('2d')
-    if (!ctx) {
-      return
-    }
-    // Draw audio wave
+    // Fill the background
+    ctx.fillStyle = audioFillColor
+    ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    // Draw waveform
     ctx.lineCap = 'round'
     ctx.lineWidth = LINE_WIDTH
-    const lineargradient = ctx.createLinearGradient(GAP_WIDTH - LINE_WIDTH / 2, 0, CANVAS_WIDTH - GAP_WIDTH + LINE_WIDTH / 2, 0)
-    lineargradient.addColorStop(0, audioPlayedColor)
-    lineargradient.addColorStop(pos, audioPlayedColor)
-    lineargradient.addColorStop(pos, audioUnplayedColor)
-    lineargradient.addColorStop(1, audioUnplayedColor)
-    ctx.strokeStyle = lineargradient
-    ctx.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+    ctx.strokeStyle = audioUnplayedColor
     const midY = CANVAS_HEIGHT / 2
     for (let i = 0; i < AUDIO_VOLUMN_BIN_COUNT; i++) {
       const bar = new Path2D()
@@ -82,9 +97,13 @@ export function ChatLine({
       const offset = audioMetadata.volumeBins[i] * MAX_BAR_HEIGHT
       bar.moveTo(x, midY - offset)
       bar.lineTo(x, midY + offset)
+      // First crop out the background, and then fill it with the color
+      ctx.globalCompositeOperation = 'destination-out'
+      ctx.stroke(bar)
+      ctx.globalCompositeOperation = 'source-over'
       ctx.stroke(bar)
     }
-  }, [curAudioTime, audioPlayedColor, audioUnplayedColor, message])
+  }, [audioUnplayedColor, audioFillColor, message])
 
   return (
     <ChatLineLayout isAi={isAi}>
@@ -103,11 +122,26 @@ export function ChatLine({
               ref={audioRef}
               src={message?.getAudioSrc()}
               className='hidden'
-              onEnded={() => setIsPlaying(false)}
-              onTimeUpdate={(e) => setCurAudioTime(e.currentTarget.currentTime)}
+              onEnded={() => {
+                setIsPlaying(false)
+                requestAnimationFrameRef.current && cancelAnimationFrame(requestAnimationFrameRef.current)
+              }}
             />
           </button>
-          <canvas ref={canvasRef} height={CANVAS_HEIGHT} width={CANVAS_WIDTH} className='w-[200px] h-6'></canvas>
+          <div className='relative w-[200px] h-[24px]'>
+            <canvas
+              ref={progressCanvasRef}
+              height={CANVAS_HEIGHT}
+              width={CANVAS_WIDTH}
+              className='absolute inset-0 w-[200px] h-[24px]'
+            ></canvas>
+            <canvas
+              ref={waveCanvasRef}
+              height={CANVAS_HEIGHT}
+              width={CANVAS_WIDTH}
+              className='absolute inset-0 w-[200px] h-[24px]'
+            ></canvas>
+          </div>
         </>
       ) : (
         content

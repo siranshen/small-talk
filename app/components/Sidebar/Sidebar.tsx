@@ -43,7 +43,12 @@ export default function Sidebar() {
               <span className='font-[600]'>Upcoming</span>: I18n support so you can learn any of your fav language.
             </div>
           </div>
-          <footer className='border-t pt-4'><Link href='https://github.com/siranshen/small-talk' target='_blank' className='flex justify-center'><GithubLogo width={24} height={24} className='mr-2' /><span>Check it out on Github!</span></Link></footer>
+          <footer className='border-t pt-4 text-sm'>
+            <Link href='https://github.com/siranshen/small-talk' target='_blank' className='flex justify-center items-center'>
+              <GithubLogo width={20} height={20} className='mr-2' />
+              <span>Check it out on Github!</span>
+            </Link>
+          </footer>
         </div>
       </div>
     </>

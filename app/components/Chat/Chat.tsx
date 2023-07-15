@@ -36,7 +36,8 @@ export default function Chat() {
   const [shouldShowAiText, setShowText] = useState<boolean>(true)
 
   useEffect(() => {
-    setShowText(localStorage.getItem('shouldShowAiText') === 'true')
+    const shouldShow = localStorage.getItem('shouldShowAiText')
+    setShowText(shouldShow === null || shouldShow === 'true')
   }, [])
 
   useEffect(() => {
@@ -50,6 +51,7 @@ export default function Chat() {
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
   }, [history])
 
+  /* Request LLM to generate response and then synthesize voice */
   const generateResponse = async (newHistory: ChatMessage[]) => {
     setStreaming(true)
     setHistory([...newHistory, new ChatMessage('', true, true)])
@@ -117,6 +119,7 @@ export default function Chat() {
     setStreaming(false)
   }
 
+  /* Send user text message */
   const sendText = async (message: string) => {
     const newMessage = new ChatMessage(message, false)
     const newHistory = [...history, newMessage]
