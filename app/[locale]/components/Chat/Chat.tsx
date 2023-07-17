@@ -16,10 +16,13 @@ import {
   SpeechSynthesisOutputFormat,
   SpeechSynthesizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
+import { useTranslations } from 'next-intl'
 
 const SAMPLE_RATE = 16000
 
 export default function Chat() {
+  const i18n = useTranslations('Chat')
+
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
 
@@ -254,23 +257,29 @@ export default function Chat() {
   }
 
   return (
-    <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
-      <div className='h-full'>
-        <div className='max-w-[650px] my-0 mx-auto p-3'>
-          {history.map((msg) => (
-            <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
-          ))}
-          {isTranscribing && <LoadingChatLineGroup isAi={false} />}
-          <div className='clear-both h-32'></div>
+    /* overflow-hidden prevents sticky div from jumping */
+    <main className='flex-1 h-full relative overflow-hidden'>
+      <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
+        <div className='after:content-["_💬"]'>{i18n('header.title')}</div>
+      </header>
+      <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
+        <div className='h-full'>
+          <div className='max-w-[650px] my-0 mx-auto p-3'>
+            {history.map((msg) => (
+              <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
+            ))}
+            {isTranscribing && <LoadingChatLineGroup isAi={false} />}
+            <div className='clear-both h-32'></div>
+          </div>
         </div>
+        <ChatInput
+          messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText }}
+          startRecording={startRecording}
+          stopRecording={stopRecording}
+          sendTextMessage={sendText}
+          setShowText={setShowText}
+        />
       </div>
-      <ChatInput
-        messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText }}
-        startRecording={startRecording}
-        stopRecording={stopRecording}
-        sendTextMessage={sendText}
-        setShowText={setShowText}
-      />
-    </div>
+    </main>
   )
 }

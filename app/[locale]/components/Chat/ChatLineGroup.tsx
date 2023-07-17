@@ -1,5 +1,5 @@
 import { ChatLine, LoadingChatLine } from './ChatLine'
-import { AudioChatMessage, ChatMessage } from '../../utils/chat-message'
+import { AudioChatMessage, ChatMessage } from '@/app/utils/chat-message'
 
 function ChatLineGroupLayout({ isAi, children }: { isAi: boolean; children: React.ReactNode }) {
   return (

@@ -1,0 +1,32 @@
+{
+  "Sidebar": {
+    "intro": "Welcome to SmallTalk! This is where you get to practice your foreign or second language skills with an AI.",
+    "notice": "This project is still being actively worked on. Stay tuned!",
+    "annoucement": {
+      "title": "Upcoming: ",
+      "content": "Refactor speech recognition and synthesis, so we have cross-browser support. Currently, we only fully support desktop Chrome and Edge."
+    },
+    "functions": {
+      "settings": "Settings",
+      "newChat": "New Chat"
+    },
+    "footer": {
+      "github": "Check it out on Github!"
+    }
+  },
+  "Chat": {
+    "header": {
+      "title": "Practicing free talk"
+    },
+    "input": {
+      "placeholder": "Hit enter to send"
+    },
+    "controls": {
+      "toggleTextShow": {
+        "show": "Show AI text",
+        "hide": "Hide AI text"
+      },
+      "clear": "Clear chat"
+    }
+  }
+}

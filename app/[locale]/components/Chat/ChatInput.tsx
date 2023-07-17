@@ -7,6 +7,7 @@ import TrashbinIcon from '@/public/icons/trashbin.svg'
 import { useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.css'
 import { messageStates } from '@/app/utils/chat-message'
+import { useTranslations } from 'next-intl'
 
 function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: Function }) {
   return (
@@ -33,6 +34,8 @@ export default function ChatInput({
   sendTextMessage: Function
   setShowText: Function
 }) {
+  const i18n = useTranslations('Chat')
+
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [input, setInput] = useState<string>('')
   const [isTooltipOpen, setTooltipOpen] = useState<boolean>(false)
@@ -40,12 +43,7 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (
-        !input ||
-        messageStates.isStreaming ||
-        messageStates.isConfiguringAudio ||
-        messageStates.isTranscribing
-      ) {
+      if (!input || messageStates.isStreaming || messageStates.isConfiguringAudio || messageStates.isTranscribing) {
         return
       }
       sendTextMessage(input)
@@ -73,7 +71,7 @@ export default function ChatInput({
         <textarea
           ref={textareaRef}
           rows={1}
-          placeholder='Hit enter to send'
+          placeholder={i18n('input.placeholder')}
           className='flex-1 border-none resize-none leading-5 max-h-24 mr-[4.75rem] focus:outline-0'
           onInput={handleInput}
           onKeyDown={handleKeyDown}
@@ -109,12 +107,14 @@ export default function ChatInput({
           >
             <TooltipItem
               icon={<DocsIcon width={16} height={16} alt='' />}
-              text={messageStates.shouldShowAiText ? 'Hide AI text' : 'Show AI text'}
+              text={
+                messageStates.shouldShowAiText ? i18n('controls.toggleTextShow.hide') : i18n('controls.toggleTextShow.show')
+              }
               onClick={() => setShowText(!messageStates.shouldShowAiText)}
             />
             <TooltipItem
               icon={<TrashbinIcon width={16} height={16} alt='' />}
-              text='Clear talk'
+              text={i18n('controls.clear')}
               onClick={() => window.location.reload()}
             />
           </div>
