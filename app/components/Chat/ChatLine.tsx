@@ -118,7 +118,7 @@ export function ChatLine({
       return
     }
     const progress = Math.max(0, Math.min(1, (x - GAP_WIDTH + LINE_WIDTH / 2) / PROGRESS_WIDTH))
-    audioRef.current.currentTime = progress * audioRef.current.duration
+    audioRef.current.currentTime = progress * audioRef.current.duration // TODO: Seeking doesn't work well on Chrome
     setIsPlaying(true)
   }
 

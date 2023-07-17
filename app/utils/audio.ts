@@ -129,25 +129,25 @@ export function getMetadataFromWav(audio: Blob, numBins: number): Promise<AudioM
         numSamples = view.getUint32(40, true) / 2
       const duration = numSamples / channelCount / sampleRate
 
-      // Calculate average over each bin
       const numSamplesPerBin = (numSamples + numBins - 1) / numBins
       const volumeBins: number[] = new Array(numBins)
       for (let i = 0, bin = 0; i < numSamples; i += numSamplesPerBin, bin++) {
         const len = Math.min(numSamplesPerBin, numSamples - i)
         let sumSquares = 0
+        let peakVolumn = 0
         for (let j = 0; j < len; j++) {
           const val = pcm16BitToFloat(view.getInt16(44 + i * 2, true))
           sumSquares += val * val
+          peakVolumn = Math.max(peakVolumn, Math.abs(val))
         }
-        // Calculates the RMS
-        volumeBins[bin] = Math.sqrt(sumSquares / len)
+        // Calculates the weighted average of RMS and peak volume
+        volumeBins[bin] = 0.4 * Math.sqrt(sumSquares / len) + 0.6 * peakVolumn
       }
       // Apply exponential moving average
-      const smoothingFactor = 0.2
       const smoothedVolumeBins: number[] = new Array(numBins)
       smoothedVolumeBins[0] = volumeBins[0]
       for (let i = 1; i < numBins; i++) {
-        const average = smoothingFactor * smoothedVolumeBins[i - 1] + (1 - smoothingFactor) * volumeBins[i]
+        const average = 0.2 * smoothedVolumeBins[i - 1] + 0.8 * volumeBins[i]
         smoothedVolumeBins[i] = average
       }
       resolve({ duration, volumeBins: smoothedVolumeBins })
