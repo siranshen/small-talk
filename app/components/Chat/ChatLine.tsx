@@ -2,7 +2,7 @@ import { AUDIO_VOLUMN_BIN_COUNT, AudioChatMessage } from '@/app/utils/chat-messa
 import AudioPauseIcon from '@/public/icons/audio-pause.svg'
 import AudioPlayIcon from '@/public/icons/audio-play.svg'
 import LoadingIcon from '@/public/icons/loading.svg'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 48
@@ -156,7 +156,7 @@ export function ChatLine({
               ref={waveCanvasRef}
               width={CANVAS_WIDTH}
               height={CANVAS_HEIGHT}
-              className='absolute inset-0 w-[200px] h-[24px]'
+              className='absolute inset-0 w-[200px] h-[24px] cursor-pointer'
               onClick={handleCanvasClick}
             ></canvas>
           </div>
