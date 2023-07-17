@@ -29,11 +29,11 @@ I will keep working on it. If you have any suggestions, please feel free to open
 
 ### Browser Compatibility
 
-It fully functions only on desktop Chrome.
+It fully functions only on desktop Chrome and Edge (Blink engine).
 
-Sorry, but the current version processes audio using Web Audio API, which is only fully supported by Chrome. Mobile version is not well supported either due to various constraints. Sending only text in the app should be mostly fine though.
+Sorry, but the current version processes audio using Web Audio API, which is only fully supported by Blink engine. Mobile version is not well supported either due to various constraints. Sending only text in the app should be mostly fine though.
 
-It will require a Websocket server (for audio processing) to function cross-browser. I may or may not add it in the future...
+It will require a Websocket server (for audio processing) to function cross-browser. I may add it in the future...
 
 ### Installation
 
