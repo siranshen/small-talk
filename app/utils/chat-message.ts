@@ -46,7 +46,7 @@ export class ChatMessage {
   }
 }
 
-export const AUDIO_VOLUMN_BIN_COUNT = 38
+export const AUDIO_VOLUMN_BIN_COUNT = 39
 
 export class AudioChatMessage extends ChatMessage {
   private audio: Blob
