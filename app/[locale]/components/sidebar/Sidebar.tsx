@@ -8,14 +8,17 @@ import SidebarToggleButton from './SidebarToggleButton'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import SidebarFunctionButton from './SidebarFunctionButton'
+import SettingsModal from '../modal/SettingsModal'
 
 export default function Sidebar() {
   const i18n = useTranslations('Sidebar')
 
   const [isOpen, setOpen] = useState<boolean>(false)
+  const [isSettingsOpen, setSettingsOpen] = useState<boolean>(false)
 
   return (
     <>
+      <SettingsModal isOpen={isSettingsOpen} setOpen={setSettingsOpen} />
       <div
         className={`${
           isOpen ? 'opacity-30 h-full [transition:opacity_300ms]' : 'opacity-0 h-0 [transition:opacity_300ms,height_1ms_300ms]'
@@ -47,8 +50,8 @@ export default function Sidebar() {
                 {i18n('annoucement.content')}
               </div>
               <div className='flex flex-col gap-2 my-6'>
-                <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} />
-                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={Logo} disabled />
+                <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} onClick={() => setSettingsOpen(true)} />
+                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={Logo} disabled onClick={() => {}}/>
               </div>
             </div>
             <footer className='border-t pt-4 text-sm'>

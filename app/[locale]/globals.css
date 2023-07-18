@@ -12,7 +12,13 @@
 html,
 body {
   height: 100%;
-  font-family: -apple-system, system-ui, BlinkMacSystemFont, Helvetica Neue, Helvetica, sans-serif;
+  font-family:
+    -apple-system,
+    system-ui,
+    BlinkMacSystemFont,
+    Helvetica Neue,
+    Helvetica,
+    sans-serif;
 }
 
 html {
@@ -52,4 +58,12 @@ button:disabled {
 
 .solid-button {
   @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none rounded-full p-2 hover:opacity-80 disabled:opacity-80;
+}
+
+select {
+  @apply appearance-none w-full h-full rounded-lg pt-1 pr-6 pb-1 pl-3;
+}
+
+.select-wrapper {
+  @apply relative rounded-lg border border-solid border-zinc-300 after:content-['▼'] after:text-[1rem] after:absolute after:top-1 after:right-2;
 }

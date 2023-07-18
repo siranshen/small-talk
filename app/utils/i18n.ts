@@ -1,0 +1,117 @@
+export interface Language {
+  name: string
+  locale: string
+  speechName: string
+  voiceNames: VoiceName[]
+}
+
+export interface VoiceName {
+  name: string
+  code: string
+  gender: 'M' | 'F'
+}
+
+export const LANGUAGES: Language[] = [
+  {
+    name: 'English',
+    locale: 'en',
+    speechName: 'en-US',
+    voiceNames: [
+      {
+        name: 'Guy',
+        code: 'en-US-GuyNeural',
+        gender: 'M',
+      },
+      {
+        name: 'Aria',
+        code: 'en-US-AriaNeural',
+        gender: 'F',
+      },
+    ],
+  },
+  {
+    name: '简体中文',
+    locale: 'zh-cn',
+    speechName: 'zh-CN',
+    voiceNames: [
+      {
+        name: '云希',
+        code: 'zh-CN-YunxiNeural',
+        gender: 'M',
+      },
+      {
+        name: '晓晓',
+        code: 'zh-CN-XiaoxiaoNeural',
+        gender: 'F',
+      },
+    ],
+  },
+  {
+    name: '繁体中文',
+    locale: 'zh-tw',
+    speechName: 'zh-TW',
+    voiceNames: [
+      {
+        name: '曉臻',
+        code: 'zh-TW-HsiaoChenNeural',
+        gender: 'F',
+      },
+      {
+        name: '雲哲',
+        code: 'zh-TW-YunJheNeural',
+        gender: 'M',
+      },
+    ],
+  },
+  {
+    name: '日本語',
+    locale: 'ja',
+    speechName: 'ja-JP',
+    voiceNames: [
+      {
+        name: '七海',
+        code: 'ja-JP-NanamiNeural',
+        gender: 'F',
+      },
+      {
+        name: '圭太',
+        code: 'ja-JP-KeitaNeural',
+        gender: 'M',
+      },
+    ],
+  },
+  {
+    name: '한국어',
+    locale: 'ko',
+    speechName: 'ko-KR',
+    voiceNames: [
+      {
+        name: '선히',
+        code: 'ko-KR-SunHiNeural',
+        gender: 'F',
+      },
+      {
+        name: '인준',
+        code: 'ko-KR-InJoonNeural',
+        gender: 'M',
+      },
+    ],
+  },
+  {
+    name: 'Español',
+    locale: 'es',
+    speechName: 'es-ES',
+    voiceNames: [
+      {
+        name: 'Alvaro',
+        code: 'es-ES-AlvaroNeural',
+        gender: 'M',
+      },
+      {
+        name: 'Elvira',
+        code: 'es-ES-ElviraNeural',
+        gender: 'F',
+      },
+    ],
+  },
+]

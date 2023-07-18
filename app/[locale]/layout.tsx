@@ -2,13 +2,14 @@ import './globals.css'
 import { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { notFound } from 'next/navigation'
+import { LANGUAGES } from '../utils/i18n'
 
 export const metadata: Metadata = {
   title: 'SmallTalk',
 }
 
 export function generateStaticParams() {
-  return [{ locale: 'en' }, { locale: 'zh-cn' }]
+  return LANGUAGES.map((lang) => ({ locale: lang.locale }))
 }
 
 export default async function RootLayout({

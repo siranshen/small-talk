@@ -14,6 +14,12 @@
       "github": "Check it out on Github!"
     }
   },
+  "Settings": {
+    "title": "Settings",
+    "systemLang": "System language",
+    "learningLang": "Learning language",
+    "confirm": "Confirm"
+  },
   "Chat": {
     "header": {
       "title": "Practicing free talk"

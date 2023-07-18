@@ -84,7 +84,7 @@ export interface GPTMessage {
   content: string
 }
 
-export interface messageStates {
+export interface MessageStates {
   isStreaming: boolean
   isConfiguringAudio: boolean
   isTranscribing: boolean

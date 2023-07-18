@@ -14,6 +14,12 @@
       "github": "来Github看看吧!"
     }
   },
+  "Settings": {
+    "title": "设置",
+    "systemLang": "系统语言",
+    "learningLang": "学习语言",
+    "confirm": "确认"
+  },
   "Chat": {
     "header": {
       "title": "自由会话练习"

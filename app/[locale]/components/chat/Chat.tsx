@@ -187,6 +187,7 @@ export default function Chat() {
     const audioConfig = AudioConfig.fromStreamInput(pushStream)
     try {
       const speechConfig = await getSpeechConfig()
+      speechConfig.speechRecognitionLanguage = 'en-US'
       speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
     } catch (e) {
       await releaseInputAudioResources()

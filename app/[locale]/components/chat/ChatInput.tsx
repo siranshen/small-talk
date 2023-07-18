@@ -6,7 +6,7 @@ import PlusIcon from '@/public/icons/plus.svg'
 import TrashbinIcon from '@/public/icons/trashbin.svg'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.css'
-import { messageStates } from '@/app/utils/chat-message'
+import { MessageStates } from '@/app/utils/chat-message'
 import { useTranslations } from 'next-intl'
 
 function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: MouseEventHandler }) {
@@ -28,7 +28,7 @@ export default function ChatInput({
   sendTextMessage,
   setShowText,
 }: {
-  messageStates: messageStates
+  messageStates: MessageStates
   startRecording: Function
   stopRecording: Function
   sendTextMessage: Function
