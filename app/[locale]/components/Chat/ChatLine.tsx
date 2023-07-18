@@ -2,7 +2,7 @@ import { AUDIO_VOLUMN_BIN_COUNT, AudioChatMessage } from '@/app/utils/chat-messa
 import AudioPauseIcon from '@/public/icons/audio-pause.svg'
 import AudioPlayIcon from '@/public/icons/audio-play.svg'
 import LoadingIcon from '@/public/icons/loading.svg'
-import { useEffect, useRef, useState } from 'react'
+import { MouseEventHandler, useCallback, useEffect, useRef, useState } from 'react'
 
 const CANVAS_WIDTH = 400
 const CANVAS_HEIGHT = 48
@@ -108,19 +108,22 @@ export function ChatLine({
     }
   }, [audioUnplayedColor, audioFillColor, message])
 
-  const handleCanvasClick = (e: React.MouseEvent<HTMLCanvasElement, MouseEvent>) => {
-    if (!audioRef.current || !progressCanvasRef.current) {
-      return
-    }
-    const bounding = e.currentTarget.getBoundingClientRect()
-    const x = (e.clientX - bounding.left) * DISPLAY_RATIO
-    if (x < GAP_WIDTH - LINE_WIDTH / 2 || x > CANVAS_WIDTH - GAP_WIDTH + LINE_WIDTH / 2) {
-      return
-    }
-    const progress = Math.max(0, Math.min(1, (x - GAP_WIDTH + LINE_WIDTH / 2) / PROGRESS_WIDTH))
-    audioRef.current.currentTime = progress * audioRef.current.duration // TODO: Seeking doesn't work well on Chrome
-    setIsPlaying(true)
-  }
+  const handleCanvasClick: MouseEventHandler = useCallback(
+    (e) => {
+      if (!audioRef.current || !progressCanvasRef.current) {
+        return
+      }
+      const bounding = e.currentTarget.getBoundingClientRect()
+      const x = (e.clientX - bounding.left) * DISPLAY_RATIO
+      if (x < GAP_WIDTH - LINE_WIDTH / 2 || x > CANVAS_WIDTH - GAP_WIDTH + LINE_WIDTH / 2) {
+        return
+      }
+      const progress = Math.max(0, Math.min(1, (x - GAP_WIDTH + LINE_WIDTH / 2) / PROGRESS_WIDTH))
+      audioRef.current.currentTime = progress * audioRef.current.duration // TODO: Seeking doesn't work well on Chrome
+      setIsPlaying(true)
+    },
+    [audioRef, progressCanvasRef, setIsPlaying]
+  )
 
   return (
     <ChatLineLayout isAi={isAi}>

@@ -4,16 +4,16 @@ import MicLoading from '@/public/icons/mic-loading.svg'
 import MicStopIcon from '@/public/icons/mic-stop.svg'
 import PlusIcon from '@/public/icons/plus.svg'
 import TrashbinIcon from '@/public/icons/trashbin.svg'
-import { useEffect, useRef, useState } from 'react'
+import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.css'
 import { messageStates } from '@/app/utils/chat-message'
 import { useTranslations } from 'next-intl'
 
-function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: Function }) {
+function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: MouseEventHandler }) {
   return (
     <button
       className='border-none rounded-md bg-white px-2 py-1 text-left text-sm text-inherit flex items-center hover:bg-gray-100'
-      onClick={() => onClick()}
+      onClick={onClick}
     >
       <span className='h-4 mr-2'>{icon}</span>
       {text}

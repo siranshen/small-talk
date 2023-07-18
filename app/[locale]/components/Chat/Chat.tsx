@@ -1,7 +1,7 @@
 'use client'
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import { SpeechSynthesisTaskProcessor, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
@@ -52,85 +52,108 @@ export default function Chat() {
       return
     }
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
-  }, [history])
+  }, [history, isTranscribing])
+
+  const releaseInputAudioResources = useCallback(async () => {
+    audioStreamRef.current?.getTracks().forEach((track) => track.stop())
+    audioStreamRef.current = null
+    await audioContextRef.current?.close()
+    audioContextRef.current = null
+    pushAudioInputStreamRef.current?.close()
+    pushAudioInputStreamRef.current = null
+    speechRecognizerRef.current?.close()
+    speechRecognizerRef.current = null
+    audioBuffersRef.current = []
+  }, [])
+
+  const releaseOutputAudioResources = useCallback(async () => {
+    speechSynthesizerRef.current?.close()
+    speechSynthesizerRef.current = null
+  }, [])
 
   /* Request LLM to generate response and then synthesize voice */
-  const generateResponse = async (newHistory: ChatMessage[]) => {
-    setStreaming(true)
-    setHistory([...newHistory, new ChatMessage('', true, true)])
-    let response, speechConfig
-    try {
-      const llmCallPromise = fetch('/api/openai', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages: newHistory.slice(-8).map((msg) => msg.toGPTMessage()),
-        }),
-      })
-      const speechConfigPromise = getSpeechConfig()
-      ;[response, speechConfig] = await Promise.all([llmCallPromise, speechConfigPromise])
+  const generateResponse = useCallback(
+    async (newHistory: ChatMessage[]) => {
+      setStreaming(true)
+      setHistory([...newHistory, new ChatMessage('', true, true)])
+      let response, speechConfig
+      try {
+        const llmCallPromise = fetch('/api/openai', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: newHistory.slice(-8).map((msg) => msg.toGPTMessage()),
+          }),
+        })
+        const speechConfigPromise = getSpeechConfig()
+        ;[response, speechConfig] = await Promise.all([llmCallPromise, speechConfigPromise])
 
-      if (!response.ok) {
-        throw new Error(response.statusText)
-      }
-      if (!response.body) {
-        throw new Error('No response returned!')
-      }
-    } catch (e) {
-      console.error('Error generating response', e)
-      setStreaming(false)
-      setHistory([...newHistory]) // Remove the loading message
-      return
-    }
-
-    const reader = response.body.getReader()
-    const decoder = new TextDecoder()
-    let done = false
-    let lastMessage = '',
-      lastPauseIndex = 0
-    speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm
-    const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(
-      speechConfig,
-      null as unknown as AudioConfig
-    ))
-    const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE)
-    speechSynthesisTaskProcessor.start()
-    try {
-      while (!done) {
-        const { value, done: doneReading } = await reader.read()
-        done = doneReading
-        const chunkValue = decoder.decode(value)
-        lastMessage += chunkValue
-        const pauseIndex = lastMessage.lastIndexOf(PAUSE_TOKEN)
-        if (pauseIndex > lastPauseIndex) {
-          speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
-          lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
+        if (!response.ok) {
+          throw new Error(response.statusText)
         }
-        setHistory([...newHistory, new ChatMessage(lastMessage, true, true)])
+        if (!response.body) {
+          throw new Error('No response returned!')
+        }
+      } catch (e) {
+        console.error('Error generating response', e)
+        setStreaming(false)
+        setHistory([...newHistory]) // Remove the loading message
+        return
       }
-      speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
-      const audioBlob = await speechSynthesisTaskProcessor.finish()
-      const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
-      await newAudioMessage.loadAudioMetadata()
-      setHistory([...newHistory, newAudioMessage])
-    } catch (e) {
-      console.error('Error while reading LLM response', e)
-    }
-    await releaseOutputAudioResources()
-    setStreaming(false)
-  }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let done = false
+      let lastMessage = '',
+        lastPauseIndex = 0
+      speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm
+      const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(
+        speechConfig,
+        null as unknown as AudioConfig
+      ))
+      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE)
+      speechSynthesisTaskProcessor.start()
+      try {
+        while (!done) {
+          const { value, done: doneReading } = await reader.read()
+          done = doneReading
+          const chunkValue = decoder.decode(value)
+          lastMessage += chunkValue
+          const pauseIndex = lastMessage.lastIndexOf(PAUSE_TOKEN)
+          if (pauseIndex > lastPauseIndex) {
+            speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
+            lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
+          }
+          setHistory([...newHistory, new ChatMessage(lastMessage, true, true)])
+        }
+        speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
+        const audioBlob = await speechSynthesisTaskProcessor.finish()
+        const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
+        await newAudioMessage.loadAudioMetadata()
+        setHistory([...newHistory, newAudioMessage])
+      } catch (e) {
+        console.error('Error while reading LLM response', e)
+      }
+      await releaseOutputAudioResources()
+      setStreaming(false)
+    },
+    [releaseOutputAudioResources]
+  )
 
   /* Send user text message */
-  const sendText = async (message: string) => {
-    const newMessage = new ChatMessage(message, false)
-    const newHistory = [...history, newMessage]
-    setHistory(newHistory)
-    await generateResponse(newHistory)
-  }
+  const sendText = useCallback(
+    async (message: string) => {
+      const newMessage = new ChatMessage(message, false)
+      const newHistory = [...history, newMessage]
+      setHistory(newHistory)
+      await generateResponse(newHistory)
+    },
+    [history, generateResponse]
+  )
 
-  const startRecording = async () => {
+  const startRecording = useCallback(async () => {
     setConfiguringAudio(true)
     if (!audioStreamRef.current) {
       try {
@@ -214,9 +237,9 @@ export default function Chat() {
       await releaseInputAudioResources()
       setTranscribing(false)
     }
-  }
+  }, [releaseInputAudioResources])
 
-  const stopRecording = async () => {
+  const stopRecording = useCallback(async () => {
     setConfiguringAudio(true)
     try {
       await stopRecognition(speechRecognizerRef.current)
@@ -237,24 +260,7 @@ export default function Chat() {
       setHistory(newHistory)
       await generateResponse(newHistory)
     }
-  }
-
-  const releaseInputAudioResources = async () => {
-    audioStreamRef.current?.getTracks().forEach((track) => track.stop())
-    audioStreamRef.current = null
-    await audioContextRef.current?.close()
-    audioContextRef.current = null
-    pushAudioInputStreamRef.current?.close()
-    pushAudioInputStreamRef.current = null
-    speechRecognizerRef.current?.close()
-    speechRecognizerRef.current = null
-    audioBuffersRef.current = []
-  }
-
-  const releaseOutputAudioResources = async () => {
-    speechSynthesizerRef.current?.close()
-    speechSynthesizerRef.current = null
-  }
+  }, [generateResponse, history, releaseInputAudioResources])
 
   return (
     /* overflow-hidden prevents sticky div from jumping */
