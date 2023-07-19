@@ -8,7 +8,7 @@ People have been building many similar apps since the release of ChatGPT. They u
 
 As of 7/12/2023:
 - [X] Wrap up basic small talk functionalities with text and voice in English. Sorry, it only supports English learners for the moment.
-- [ ] Add i18n support. Yay! Now you can learn (almost) any language you want.
+- [X] Add i18n support. Yay! Now you can learn (almost) any language you want.
 - [ ] Support review mode, where the AI gives you feedback in your own language on the recent conversation. You can ask AI to elaborate or explain to you when you are confused!
 - [ ] Store and load conversations based on a (file-based) database.
 - [ ] Add pre-defined scenarios, so you can learn to talk in different common scenarios.

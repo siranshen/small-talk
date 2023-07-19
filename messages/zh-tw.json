@@ -1,0 +1,41 @@
+{
+  "Sidebar": {
+    "intro": "歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。",
+    "notice": "本項目尚處於密集開發階段。新功能敬請期待！",
+    "annoucement": {
+      "title": "下一步計劃：",
+      "content": "重構語音識別和生成功能，以達到跨瀏覽器支持。目前僅完全支持電腦端Chrome和Edge。"
+    },
+    "functions": {
+      "settings": "設置",
+      "newChat": "新對話"
+    },
+    "footer": {
+      "github": "來Github看看吧！"
+    }
+  },
+  "Settings": {
+    "title": "設置",
+    "systemLang": "系統語言",
+    "learningLang": "學習語言"
+  },
+  "Chat": {
+    "header": {
+      "title": "自由會話練習"
+    },
+    "input": {
+      "placeholder": "按回車發送"
+    },
+    "controls": {
+      "toggleTextShow": {
+        "show": "展示AI文字",
+        "hide": "隱藏AI文字"
+      },
+      "clear": "清除對話"
+    }
+  },
+  "Common": {
+    "confirm": "確認",
+    "cancel": "取消"
+  }
+}

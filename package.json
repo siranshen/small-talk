@@ -19,7 +19,7 @@
     "eventsource-parser": "~1.0.0",
     "microsoft-cognitiveservices-speech-sdk": "~1.30.1",
     "next": "~13.4.10",
-    "next-intl": "~2.17.5",
+    "next-intl": "~2.19.0",
     "postcss": "8.4.24",
     "react": "18.2.0",
     "react-dom": "18.2.0",

@@ -10,7 +10,7 @@ export class ChatMessage {
   private streaming: boolean = false
 
   constructor(text: string, isAi: boolean, isStreaming?: boolean) {
-    this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '')
+    this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '').replaceAll(PAUSE_TOKEN, '')
     this.llmText = text
     this.isAi = isAi
     if (isStreaming) {

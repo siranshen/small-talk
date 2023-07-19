@@ -1,6 +1,7 @@
 import { QueueObject, queue } from 'async'
 import { SpeechConfig, SpeechRecognizer, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'
 import { AudioPlayTask, exportBufferInWav, exportBuffersInWav } from './audio'
+import { Language } from './i18n'
 
 export async function startRecognition(speechRecognizer: SpeechRecognizer | null): Promise<void> {
   if (!speechRecognizer) {
@@ -70,11 +71,11 @@ export interface SpeechSynthesisTask {
   text: string
 }
 
-export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text: string, lang: string): Promise<ArrayBuffer> {
+export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text: string, lang: Language): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
-      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang}">
-        <voice name="en-US-GuyNeural">
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang.speechName}">
+        <voice name="${lang.voiceNames[0].code}">
           <mstts:express-as style="cheerful">
             <prosody rate="+10.00%">
               ${text}
@@ -98,12 +99,14 @@ export class SpeechSynthesisTaskProcessor {
   private speechSynthesizer: SpeechSynthesizer
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
+  private lang: Language
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
   private speechSynthesisQueue: QueueObject<SpeechSynthesisTask> | null = null
 
-  constructor(speechSynthesizer: SpeechSynthesizer, sampleRate: number) {
+  constructor(speechSynthesizer: SpeechSynthesizer, sampleRate: number, lang: Language) {
     this.speechSynthesizer = speechSynthesizer
     this.sampleRate = sampleRate
+    this.lang = lang
   }
 
   start(): void {
@@ -128,7 +131,7 @@ export class SpeechSynthesisTaskProcessor {
         return
       }
       try {
-        const audioData = await generateSpeech(this.speechSynthesizer, task.text, 'en-US')
+        const audioData = await generateSpeech(this.speechSynthesizer, task.text, this.lang)
         this.audioPlayQueue?.push({ audioData })
       } catch (e) {
         console.error('Error generating speech', e)

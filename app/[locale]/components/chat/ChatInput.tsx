@@ -82,7 +82,7 @@ export default function ChatInput({
             id='mic-btn'
             disabled={messageStates.isStreaming || messageStates.isConfiguringAudio}
             onClick={() => (messageStates.isTranscribing ? stopRecording() : startRecording())}
-            className={`${messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''} relative solid-button mr-2`}
+            className={`${messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''} solid-button rounded-full relative mr-2`}
           >
             {messageStates.isConfiguringAudio ? (
               <MicLoading width={16} height={16} alt='loading' />
@@ -94,7 +94,7 @@ export default function ChatInput({
           </button>
           <button
             id='options-btn'
-            className={`${isTooltipOpen ? 'rotate-45' : ''} solid-button transition-transform duration-300`}
+            className={`${isTooltipOpen ? 'rotate-45' : ''} solid-button rounded-full transition-transform duration-300`}
             onClick={() => setTooltipOpen(!isTooltipOpen)}
           >
             <PlusIcon width={16} height={16} alt='options' />

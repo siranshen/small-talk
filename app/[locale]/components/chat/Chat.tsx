@@ -17,6 +17,7 @@ import {
   SpeechSynthesizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
 import { useTranslations } from 'next-intl'
+import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
 
 const SAMPLE_RATE = 16000
 
@@ -76,6 +77,7 @@ export default function Chat() {
     async (newHistory: ChatMessage[]) => {
       setStreaming(true)
       setHistory([...newHistory, new ChatMessage('', true, true)])
+      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
       let response, speechConfig
       try {
         const llmCallPromise = fetch('/api/openai', {
@@ -85,6 +87,8 @@ export default function Chat() {
           },
           body: JSON.stringify({
             messages: newHistory.slice(-8).map((msg) => msg.toGPTMessage()),
+            language: learningLanguage.name,
+            speakerName: learningLanguage.voiceNames[0].name, // TODO customize
           }),
         })
         const speechConfigPromise = getSpeechConfig()
@@ -113,7 +117,7 @@ export default function Chat() {
         speechConfig,
         null as unknown as AudioConfig
       ))
-      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE)
+      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE, learningLanguage)
       speechSynthesisTaskProcessor.start()
       try {
         while (!done) {
@@ -184,10 +188,11 @@ export default function Chat() {
           break
       }
     }
+    const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
     const audioConfig = AudioConfig.fromStreamInput(pushStream)
     try {
       const speechConfig = await getSpeechConfig()
-      speechConfig.speechRecognitionLanguage = 'en-US'
+      speechConfig.speechRecognitionLanguage = learningLanguage.speechName
       speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
     } catch (e) {
       await releaseInputAudioResources()
@@ -197,20 +202,11 @@ export default function Chat() {
     const speechRecognizer = speechRecognizerRef.current
 
     lastMessageRef.current = ''
-    speechRecognizer.sessionStarted = (_, event) => {
-      console.log('Starting to record', event.sessionId)
-    }
-    speechRecognizer.sessionStopped = (_, event) => {
-      console.log('Recording ended', event.sessionId)
-    }
-    speechRecognizer.recognizing = (_, event) => {
-      console.log('Recognizing', event.sessionId, ResultReason[event.result.reason], event.result.text)
-    }
     speechRecognizer.recognized = (_, event) => {
       let result = event.result
       switch (result.reason) {
         case ResultReason.RecognizedSpeech:
-          console.log('Sppech recognized', result.text)
+          console.log('Speech recognized', result.text)
           // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
           if (lastMessageRef.current === '') {
             lastMessageRef.current = result.text

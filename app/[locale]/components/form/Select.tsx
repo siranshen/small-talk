@@ -1,20 +1,21 @@
-export function Option({ value, text }: { value: string; text: string }) {
-  return (
-    <option value={value} className='bg-white'>
-      {text}
-    </option>
-  )
-}
+import { Ref, forwardRef } from 'react'
 
-export default function Select({ label, children }: { label: string; children: React.ReactNode }) {
+const Select = forwardRef(function Select(
+  { label, id, children }: { label: string; id: string; children: React.ReactNode },
+  ref: Ref<HTMLSelectElement>
+) {
   return (
-    <div className='mt-2 flex items-center'>
-      <span className='font-medium text-gray-500 mr-4 flex-[0_0_80px]'>{label}</span>
-      <div className='select-wrapper flex-[0_1_75%]'>
-        <select id='system-lang' name='system-lang'>
+    <div className='mt-4'>
+      <label htmlFor={id} className='block font-medium text-sm text-gray-500 mb-2'>
+        {label}
+      </label>
+      <div className='select-wrapper'>
+        <select id={id} name={id} ref={ref}>
           {children}
         </select>
       </div>
     </div>
   )
-}
+})
+
+export default Select

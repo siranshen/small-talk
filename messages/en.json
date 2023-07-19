@@ -17,8 +17,7 @@
   "Settings": {
     "title": "Settings",
     "systemLang": "System language",
-    "learningLang": "Learning language",
-    "confirm": "Confirm"
+    "learningLang": "Learning language"
   },
   "Chat": {
     "header": {
@@ -34,5 +33,9 @@
       },
       "clear": "Clear chat"
     }
+  },
+  "Common": {
+    "confirm": "Confirm",
+    "cancel": "Cancel"
   }
 }

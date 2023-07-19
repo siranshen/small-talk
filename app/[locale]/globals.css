@@ -57,7 +57,11 @@ button:disabled {
 }
 
 .solid-button {
-  @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none rounded-full p-2 hover:opacity-80 disabled:opacity-80;
+  @apply bg-[--main-theme-color] text-white font-[600] text-sm border-none p-2 hover:opacity-80 disabled:opacity-80;
+}
+
+.solid-button-light {
+  @apply bg-white text-[--main-font-color] font-[600] text-sm border border-solid border-zinc-300 p-2 hover:opacity-80 disabled:opacity-80;
 }
 
 select {

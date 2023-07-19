@@ -1,0 +1,41 @@
+{
+  "Sidebar": {
+    "intro": "SmallTalk에 오신 것을 환영합니다! 여기서는 AI와 함께 외국어 또는 두 번째 언어 실력을 연습할 수 있습니다.",
+    "notice": "이 프로젝트는 여전히 적극적으로 진행 중입니다. 기대해 주세요!",
+    "annoucement": {
+      "title": "다가오는 업데이트: ",
+      "content": "음성 인식 및 합성을 리팩토링하여 크로스 브라우저 지원이 가능하게 합니다. 현재는 데스크톱 Chrome과 Edge만 전체 지원합니다."
+    },
+    "functions": {
+      "settings": "설정",
+      "newChat": "새 채팅"
+    },
+    "footer": {
+      "github": "Github에서 확인해보세요!"
+    }
+  },
+  "Settings": {
+    "title": "설정",
+    "systemLang": "시스템 언어",
+    "learningLang": "학습 언어"
+  },
+  "Chat": {
+    "header": {
+      "title": "자유롭게 대화 연습하기"
+    },
+    "input": {
+      "placeholder": "엔터를 눌러서 보내기"
+    },
+    "controls": {
+      "toggleTextShow": {
+        "show": "AI 텍스트 보이기",
+        "hide": "AI 텍스트 숨기기"
+      },
+      "clear": "채팅 지우기"
+    }
+  },
+  "Common": {
+    "confirm": "확인",
+    "cancel": "취소"
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "Sidebar": {
+    "intro": "¡Bienvenido a SmallTalk! Aquí es donde puedes practicar tus habilidades en un idioma extranjero o segundo idioma con un IA.",
+    "notice": "Este proyecto aún está siendo trabajado activamente. ¡Mantente al tanto!",
+    "annoucement": {
+      "title": "Próximamente: ",
+      "content": "Reestructuración del reconocimiento de voz y síntesis, para tener soporte en diferentes navegadores. Actualmente, solo brindamos soporte completo para Chrome y Edge en escritorio."
+    },
+    "functions": {
+      "settings": "Ajustes",
+      "newChat": "Nueva conversación"
+    },
+    "footer": {
+      "github": "¡Visítalo en Github!"
+    }
+  },
+  "Settings": {
+    "title": "Ajustes",
+    "systemLang": "Idioma del sistema",
+    "learningLang": "Idioma de aprendizaje"
+  },
+  "Chat": {
+    "header": {
+      "title": "Practicando conversación libre"
+    },
+    "input": {
+      "placeholder": "Presiona enter para enviar"
+    },
+    "controls": {
+      "toggleTextShow": {
+        "show": "Mostrar texto de IA",
+        "hide": "Ocultar texto de IA"
+      },
+      "clear": "Limpiar conversación"
+    }
+  },
+  "Common": {
+    "confirm": "Confirmar",
+    "cancel": "Cancelar"
+  }
+}

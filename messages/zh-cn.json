@@ -17,8 +17,7 @@
   "Settings": {
     "title": "设置",
     "systemLang": "系统语言",
-    "learningLang": "学习语言",
-    "confirm": "确认"
+    "learningLang": "学习语言"
   },
   "Chat": {
     "header": {
@@ -34,5 +33,9 @@
       },
       "clear": "清除对话"
     }
+  },
+  "Common": {
+    "confirm": "确认",
+    "cancel": "取消"
   }
 }
