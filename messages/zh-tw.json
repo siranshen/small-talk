@@ -2,10 +2,6 @@
   "Sidebar": {
     "intro": "歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。",
     "notice": "本項目尚處於密集開發階段。新功能敬請期待！",
-    "annoucement": {
-      "title": "下一步計劃：",
-      "content": "重構語音識別和生成功能，以達到跨瀏覽器支持。目前僅完全支持電腦端Chrome和Edge。"
-    },
     "functions": {
       "settings": "設置",
       "newChat": "新對話"

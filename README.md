@@ -6,7 +6,7 @@ People have been building many similar apps since the release of ChatGPT. They u
 
 ## Roadmap
 
-As of 7/12/2023:
+As of 7/20/2023:
 - [X] Wrap up basic small talk functionalities with text and voice in English. Sorry, it only supports English learners for the moment.
 - [X] Add i18n support. Yay! Now you can learn (almost) any language you want.
 - [ ] Support review mode, where the AI gives you feedback in your own language on the recent conversation. You can ask AI to elaborate or explain to you when you are confused!
@@ -29,11 +29,8 @@ I will keep working on it. If you have any suggestions, please feel free to open
 
 ### Browser Compatibility
 
-It fully functions only on desktop Chrome and Edge (Blink engine).
-
-Sorry, but the current version processes audio using Web Audio API, which is only fully supported by Blink engine. Mobile version is not well supported either due to various constraints. Sending only text in the app should be mostly fine though.
-
-It will require a Websocket server (for audio processing) to function cross-browser. I may add it in the future...
+Currently, it fully functions only on non-Webkit mainstream browsers (Chrome, Edge, Firefox). Webkit browsers (Safari or any browser on iOS) do not allow audio playback without user interaction. A
+workaround is needed.
 
 ### Installation
 

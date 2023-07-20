@@ -45,10 +45,6 @@ export default function Sidebar() {
             <div className='flex-grow'>
               <div className='mb-4 leading-6'>{i18n('intro')}</div>
               <div className='mb-4 leading-6'>{i18n('notice')}</div>
-              <div className='mb-4 leading-6'>
-                <span className='font-medium'>{i18n('annoucement.title')}</span>
-                {i18n('annoucement.content')}
-              </div>
               <div className='flex flex-col gap-2 my-6'>
                 <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} onClick={() => setSettingsOpen(true)} />
                 <SidebarFunctionButton text={i18n('functions.newChat')} Icon={Logo} disabled onClick={() => {}}/>

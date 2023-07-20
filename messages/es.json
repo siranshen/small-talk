@@ -2,10 +2,6 @@
   "Sidebar": {
     "intro": "¡Bienvenido a SmallTalk! Aquí es donde puedes practicar tus habilidades en un idioma extranjero o segundo idioma con un IA.",
     "notice": "Este proyecto aún está siendo trabajado activamente. ¡Mantente al tanto!",
-    "annoucement": {
-      "title": "Próximamente: ",
-      "content": "Reestructuración del reconocimiento de voz y síntesis, para tener soporte en diferentes navegadores. Actualmente, solo brindamos soporte completo para Chrome y Edge en escritorio."
-    },
     "functions": {
       "settings": "Ajustes",
       "newChat": "Nueva conversación"
