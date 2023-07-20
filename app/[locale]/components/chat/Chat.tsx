@@ -9,6 +9,7 @@ import { exportAudioInWav } from '@/app/utils/audio'
 import {
   AudioConfig,
   AudioInputStream,
+  AudioStreamFormat,
   CancellationDetails,
   PushAudioInputStream,
   ResultReason,
@@ -29,6 +30,8 @@ export default function Chat() {
 
   const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
+  const processorNodeRef = useRef<AudioWorkletNode | ScriptProcessorNode | null>(null)
   const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
   const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null)
   const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
@@ -38,6 +41,10 @@ export default function Chat() {
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
   const [shouldShowAiText, setShowText] = useState<boolean>(true)
+
+  const isSafari = useCallback(() => {
+    return navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1
+  }, [])
 
   useEffect(() => {
     const shouldShow = localStorage.getItem('shouldShowAiText')
@@ -169,23 +176,26 @@ export default function Chat() {
       }
     }
     if (!audioContextRef.current) {
-      // Azure accepts 16kHz 16-bit mono PCM by default
-      audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE })
+      audioContextRef.current = new AudioContext()
       await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
     }
     const audioContext = audioContextRef.current
-    const source = audioContext.createMediaStreamSource(audioStreamRef.current)
-    const processorNode = new AudioWorkletNode(audioContext, 'MonoProcessor')
+    const source = (audioSourceRef.current = audioContext.createMediaStreamSource(audioStreamRef.current))
+    const processorNode = (processorNodeRef.current = new AudioWorkletNode(audioContext, 'MonoProcessor'))
     const buffers: Int16Array[][] = (audioBuffersRef.current = [])
-    const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream())
+    const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream(
+      AudioStreamFormat.getWaveFormatPCM(audioContext.sampleRate, 16, 1)
+    ))
     processorNode.port.onmessage = (event) => {
       switch (event.data.type) {
         case 'interm':
-          buffers.push(event.data.buffer)
+          buffers.push(event.data.buffers)
           break
         case 'final':
-          pushStream.write(new Int16Array(event.data.outputChannel).buffer)
+          pushStream.write(event.data.buffer)
           break
+        default:
+          console.error('Unhandled data', event.data)
       }
     }
     const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
@@ -225,6 +235,10 @@ export default function Chat() {
       }
     }
     source.connect(processorNode) // Start recording
+    if (isSafari()) {
+      // Safari requires connecting to destination to start recording
+      processorNode.connect(audioContext.destination)
+    }
     setConfiguringAudio(false)
     setTranscribing(true)
     try {
@@ -234,16 +248,20 @@ export default function Chat() {
       await releaseInputAudioResources()
       setTranscribing(false)
     }
-  }, [releaseInputAudioResources])
+  }, [isSafari, releaseInputAudioResources])
 
   const stopRecording = useCallback(async () => {
     setConfiguringAudio(true)
+    audioSourceRef.current?.disconnect()
+    processorNodeRef.current?.disconnect()
+    audioSourceRef.current = null
+    processorNodeRef.current = null
     try {
       await stopRecognition(speechRecognizerRef.current)
     } catch (e) {
       console.error('Error stopping recognition', e)
     }
-    const audioBlob = exportAudioInWav(SAMPLE_RATE, audioBuffersRef.current)
+    const audioBlob = exportAudioInWav(audioContextRef.current?.sampleRate ?? SAMPLE_RATE, audioBuffersRef.current)
     await releaseInputAudioResources()
     setTranscribing(false)
     setConfiguringAudio(false)

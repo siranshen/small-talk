@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
         ...messages,
       ],
       max_tokens: 1000,
-      temperature: 0.2,
+      temperature: 0.8,
       stream: true,
     }),
   })

@@ -5,29 +5,33 @@ class MonoProcessor extends AudioWorkletProcessor {
   process(inputs, outputs) {
     // By default, the node has single input and output
     const input = inputs[0]
-    const outputChannel = outputs[0][0]
+    let buffer = new Int16Array(0)
 
     if (input.length === 2) {
       // The input is stereo
       const left = input[0],
         right = input[1],
-        newLeft = [],
-        newRight = []
+        newLeft = new Int16Array(left.length),
+        newRight = new Int16Array(left.length)
+      buffer = new Int16Array(left.length)
       for (let i = 0; i < left.length; ++i) {
         // Convert stereo to mono by averaging the two channels
         newLeft[i] = floatTo16BitPCM(left[i])
         newRight[i] = floatTo16BitPCM(right[i])
-        outputChannel[i] = (newLeft[i] + newRight[i]) / 2
+        buffer[i] = (newLeft[i] + newRight[i]) / 2
       }
-      this.port.postMessage({ type: 'interm', buffer: [newLeft, newRight] })
+      this.port.postMessage({ type: 'interm', buffers: [newLeft, newRight] })
     } else if (input.length === 1) {
+      const mono = input[0]
+      buffer = new Int16Array(mono.length)
       // The input is already mono
-      for (let i = 0; i < left.length; ++i) {
-        outputChannel[i] = floatTo16BitPCM(input[0])
+      for (let i = 0; i < mono.length; ++i) {
+        buffer[i] = floatTo16BitPCM(mono[i])
       }
-      this.port.postMessage({ type: 'interm', buffer: [outputChannel] })
+      this.port.postMessage({ type: 'interm', buffers: [buffer] })
     }
-    this.port.postMessage({ type: 'final', outputChannel })
+    // Posts ArrayBuffer
+    this.port.postMessage({ type: 'final', buffer: buffer.buffer })
 
     return true
   }
