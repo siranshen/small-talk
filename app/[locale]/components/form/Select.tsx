@@ -10,7 +10,7 @@ const Select = forwardRef(function Select(
         {label}
       </label>
       <div className='select-wrapper'>
-        <select id={id} name={id} ref={ref}>
+        <select id={id} name={id} ref={ref} className='bg-inherit'>
           {children}
         </select>
       </div>
