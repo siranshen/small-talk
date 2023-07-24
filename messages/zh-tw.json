@@ -4,7 +4,8 @@
     "notice": "本項目尚處於密集開發階段。新功能敬請期待！",
     "functions": {
       "settings": "設置",
-      "newChat": "新對話"
+      "newChat": "新對話",
+      "prevChats": "歷史對話"
     },
     "footer": {
       "github": "來Github看看吧！"

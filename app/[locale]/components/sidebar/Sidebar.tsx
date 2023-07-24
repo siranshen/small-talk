@@ -48,6 +48,7 @@ export default function Sidebar() {
               <div className='flex flex-col gap-2 my-6'>
                 <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} onClick={() => setSettingsOpen(true)} />
                 <SidebarFunctionButton text={i18n('functions.newChat')} Icon={Logo} disabled onClick={() => {}}/>
+                <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}}/>
               </div>
             </div>
             <footer className='border-t pt-4 text-sm'>

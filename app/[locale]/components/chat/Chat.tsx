@@ -221,11 +221,13 @@ export default function Chat() {
       switch (result.reason) {
         case ResultReason.RecognizedSpeech:
           console.log('Speech recognized', result.text)
-          // TODO: Adding space for English or similar languages. Not required for languages that don't use space.
           if (lastMessageRef.current === '') {
             lastMessageRef.current = result.text
-          } else {
+          } else if (learningLanguage.spaceDelimited) {
+            // Add space for English or other space-delimited languages
             lastMessageRef.current += ' ' + result.text
+          } else {
+            lastMessageRef.current += result.text
           }
           break
         case ResultReason.NoMatch:

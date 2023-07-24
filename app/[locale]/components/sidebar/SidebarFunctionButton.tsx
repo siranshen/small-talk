@@ -13,7 +13,7 @@ export default function SidebarFunctionButton({
 }) {
   return (
     <button
-      className='rounded-lg border border-solid border-zinc-300 hover:bg-zinc-200 p-4 py-3 text-left flex items-center'
+      className='rounded-lg border border-solid border-zinc-300 hover:bg-zinc-200 px-4 py-3 text-left flex items-center'
       disabled={disabled}
       onClick={onClick}
     >

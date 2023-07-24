@@ -4,7 +4,8 @@
     "notice": "This project is still being actively worked on. Stay tuned!",
     "functions": {
       "settings": "Settings",
-      "newChat": "New Chat"
+      "newChat": "New Chat",
+      "prevChats": "Previous Chats"
     },
     "footer": {
       "github": "Check it out on Github!"
