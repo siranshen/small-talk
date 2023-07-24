@@ -29,7 +29,7 @@ I will keep working on it. If you have any suggestions, please feel free to open
 
 ### Browser Compatibility
 
-Currently, it fully functions only on non-Webkit mainstream browsers (Chrome, Edge, Firefox). Webkit browsers (Safari or any browser on iOS) do not allow audio playback without user interaction. A
+As of 7/20/2023, it fully functions only on non-Webkit mainstream browsers (Chrome, Edge, Firefox). Webkit browsers (Safari or any browser on iOS) do not allow audio playback without user interaction. A
 workaround is needed.
 
 ### Installation

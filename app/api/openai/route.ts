@@ -52,6 +52,10 @@ export async function POST(request: NextRequest) {
       const onParse = (event: ParsedEvent | ReconnectInterval) => {
         if (event.type === 'event') {
           const data = event.data
+          if (data === '[DONE]') {
+            controller.close()
+            return
+          }
 
           try {
             const json = JSON.parse(data)

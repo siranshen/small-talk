@@ -5,7 +5,7 @@ class MonoProcessor extends AudioWorkletProcessor {
   process(inputs, outputs) {
     // By default, the node has single input and output
     const input = inputs[0]
-    let buffer = new Int16Array(0)
+    let buffer
 
     if (input.length === 2) {
       // The input is stereo
@@ -30,8 +30,10 @@ class MonoProcessor extends AudioWorkletProcessor {
       }
       this.port.postMessage({ type: 'interm', buffers: [buffer] })
     }
-    // Posts ArrayBuffer
-    this.port.postMessage({ type: 'final', buffer: buffer.buffer })
+    if (buffer) {
+      // Posts ArrayBuffer
+      this.port.postMessage({ type: 'final', buffer: buffer.buffer })
+    }
 
     return true
   }

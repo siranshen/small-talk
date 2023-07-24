@@ -31,7 +31,7 @@ export default function Chat() {
   const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
-  const processorNodeRef = useRef<AudioWorkletNode | ScriptProcessorNode | null>(null)
+  const processorNodeRef = useRef<AudioWorkletNode | null>(null)
   const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
   const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null)
   const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
@@ -49,6 +49,12 @@ export default function Chat() {
   useEffect(() => {
     const shouldShow = localStorage.getItem('shouldShowAiText')
     setShowText(shouldShow === null || shouldShow === 'true')
+    setConfiguringAudio(true)
+    audioContextRef.current = new AudioContext()
+    audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js').then(() => setConfiguringAudio(false))
+    return () => {
+      audioContextRef.current?.close()
+    }
   }, [])
 
   useEffect(() => {
@@ -65,8 +71,6 @@ export default function Chat() {
   const releaseInputAudioResources = useCallback(async () => {
     audioStreamRef.current?.getTracks().forEach((track) => track.stop())
     audioStreamRef.current = null
-    await audioContextRef.current?.close()
-    audioContextRef.current = null
     pushAudioInputStreamRef.current?.close()
     pushAudioInputStreamRef.current = null
     speechRecognizerRef.current?.close()
@@ -253,9 +257,11 @@ export default function Chat() {
   const stopRecording = useCallback(async () => {
     setConfiguringAudio(true)
     audioSourceRef.current?.disconnect()
+    processorNodeRef.current?.port.close()
     processorNodeRef.current?.disconnect()
     audioSourceRef.current = null
     processorNodeRef.current = null
+    pushAudioInputStreamRef.current?.close()
     try {
       await stopRecognition(speechRecognizerRef.current)
     } catch (e) {

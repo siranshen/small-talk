@@ -15,6 +15,10 @@ export function exportAudioInWav(sampleRate: number, buffers: Int16Array[][]): B
       newBuffers[i] = buffers[i][0]
       totalLength += buffers[i][0].length
     } else {
+      if (!buffers[i][1]) {
+        // Somehow this happens on Safari, so let's just duplicate the channel
+        buffers[i][1] = buffers[i][0]
+      }
       const interleaved = interleave(buffers[i][0], buffers[i][1])
       newBuffers[i] = interleaved
       totalLength += interleaved.length
