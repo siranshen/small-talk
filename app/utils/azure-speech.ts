@@ -97,13 +97,15 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text:
 
 export class SpeechSynthesisTaskProcessor {
   private speechSynthesizer: SpeechSynthesizer
+  private audioContext: AudioContext
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
   private lang: Language
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
   private speechSynthesisQueue: QueueObject<SpeechSynthesisTask> | null = null
 
-  constructor(speechSynthesizer: SpeechSynthesizer, sampleRate: number, lang: Language) {
+  constructor(audioContext: AudioContext, speechSynthesizer: SpeechSynthesizer, sampleRate: number, lang: Language) {
+    this.audioContext = audioContext
     this.speechSynthesizer = speechSynthesizer
     this.sampleRate = sampleRate
     this.lang = lang
@@ -113,17 +115,21 @@ export class SpeechSynthesisTaskProcessor {
     this.audioPlayQueue = queue(async (task: AudioPlayTask, _) => {
       this.audioBuffers.push(task.audioData)
       const tempAudioBlob = exportBufferInWav(this.sampleRate, 1, task.audioData)
-      const tempAudioUrl = URL.createObjectURL(tempAudioBlob)
-      const audio = new Audio(tempAudioUrl)
+      let decodedBuffer: AudioBuffer
+      try {
+        decodedBuffer = await this.audioContext.decodeAudioData(await tempAudioBlob.arrayBuffer())
+      } catch (e) {
+        console.error('Error decoding audio buffer', e)
+        return
+      }
+      const source = this.audioContext.createBufferSource()
+      source.buffer = decodedBuffer
+      source.connect(this.audioContext.destination)
       await new Promise<void>((resolve) => {
-        audio.onended = () => {
-          URL.revokeObjectURL(tempAudioUrl)
+        source.onended = () => {
           resolve()
         }
-        audio.play().catch((e) => {
-          console.error('Error playing audio', e)
-          resolve()
-        })
+        source.start()
       })
     }, 1)
     this.speechSynthesisQueue = queue(async (task: SpeechSynthesisTask, _) => {

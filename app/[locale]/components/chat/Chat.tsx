@@ -20,7 +20,7 @@ import {
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
 
-const SAMPLE_RATE = 16000
+const SAMPLE_RATE = 24000
 
 export default function Chat() {
   const i18n = useTranslations('Chat')
@@ -28,6 +28,7 @@ export default function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
 
+  const isAudioAutoplaying = useRef<boolean>(false)
   const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
@@ -45,6 +46,24 @@ export default function Chat() {
   const isSafari = useCallback(() => {
     return navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1
   }, [])
+
+  /* A workaround to unlock autoplay on Webkit browsers */
+  const enableAudioAutoplay = useCallback(async () => {
+    if (isAudioAutoplaying.current || !audioContextRef.current) {
+      return
+    }
+    if (!isSafari()) {
+      // Non-Webkit browsers don't need this
+      return
+    }
+    const audioContext = audioContextRef.current
+    const dummyBuffer = audioContext.createBuffer(1, 1, 22050)
+    const source = audioContext.createBufferSource()
+    source.buffer = dummyBuffer
+    source.connect(audioContext.destination)
+    source.start()
+    isAudioAutoplaying.current = true
+  }, [isSafari])
 
   useEffect(() => {
     const shouldShow = localStorage.getItem('shouldShowAiText')
@@ -123,12 +142,17 @@ export default function Chat() {
       let done = false
       let lastMessage = '',
         lastPauseIndex = 0
-      speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw16Khz16BitMonoPcm
+      speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw24Khz16BitMonoPcm
       const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(
         speechConfig,
         null as unknown as AudioConfig
       ))
-      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(speechSynthesizer, SAMPLE_RATE, learningLanguage)
+      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(
+        audioContextRef.current as AudioContext,
+        speechSynthesizer,
+        SAMPLE_RATE,
+        learningLanguage
+      )
       speechSynthesisTaskProcessor.start()
       try {
         while (!done) {
@@ -287,7 +311,7 @@ export default function Chat() {
 
   return (
     /* overflow-hidden prevents sticky div from jumping */
-    <main className='flex-1 h-full relative overflow-hidden'>
+    <main className='flex-1 h-full relative overflow-hidden' onClick={enableAudioAutoplay}>
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
         <div className='after:content-["_💬"]'>{i18n('header.title')}</div>
       </header>
