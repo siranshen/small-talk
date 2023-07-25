@@ -60,6 +60,7 @@ export default function Chat() {
     const dummyBuffer = audioContext.createBuffer(1, 1, 22050)
     const source = audioContext.createBufferSource()
     source.buffer = dummyBuffer
+    source.loop = true
     source.connect(audioContext.destination)
     source.start()
     isAudioAutoplaying.current = true

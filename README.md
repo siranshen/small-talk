@@ -54,6 +54,38 @@ Finally start the app simply by running:
 npm run dev
 ```
 
+### Testing on Mobile Devices
+
+Starting audio on a mobile device requires secure connection, so we need to set up HTTPS. Follow the instructions below:
+
+Install `mkcert` and generate a certificate for localhost:
+
+```bash
+brew install mkcert # Or equivalent on your OS
+mkcert -install
+mkcert localhost # Run this command under project's root directory
+```
+
+You'll see two files generated: `localhost.pem` and `localhost-key.pem`. Then install the proxy:
+
+```bash
+npm install -g local-ssl-proxy
+```
+
+And start the proxy:
+
+```bash
+local-ssl-proxy --source 8080 --target <YOUR_PORT> --cert localhost.pem --key localhost-key.pem # <YOUR_PORT> is the port started by Next.js, which is 3000 by default
+```
+
+Finally find your local IP by running:
+
+```bash
+ipconfig getifaddr en0
+```
+
+Now you can access the app on your mobile device by visiting `https://<YOUR_IP_ADDRESS>:8080`. Make sure your mobile device is connected to the same network as your computer.
+
 ### Configuration
 
 Currently the page does not have widgets to configure how the AI speaks. You can change it by directly editing the SSML under `app/utils/azure-speech.ts`.
