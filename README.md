@@ -54,9 +54,11 @@ Finally start the app simply by running:
 npm run dev
 ```
 
+## Additional Notes
+
 ### Testing on Mobile Devices
 
-Starting audio on a mobile device requires secure connection, so we need to set up HTTPS. Follow the instructions below:
+Starting audio on a mobile device requires secure connection, so we need to set up HTTPS when testing locally. Follow the instructions below:
 
 Install `mkcert` and generate a certificate for localhost:
 
