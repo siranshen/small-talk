@@ -33,6 +33,7 @@
   },
   "Common": {
     "confirm": "확인",
-    "cancel": "취소"
+    "cancel": "취소",
+    "error": "오류 발생했어요..."
   }
 }

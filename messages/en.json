@@ -33,6 +33,7 @@
   },
   "Common": {
     "confirm": "Confirm",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "error": "Sorry, an error occurred..."
   }
 }

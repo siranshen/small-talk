@@ -33,6 +33,7 @@
   },
   "Common": {
     "confirm": "確認",
-    "cancel": "取消"
+    "cancel": "取消",
+    "error": "抱歉，剛出了個小問題..."
   }
 }

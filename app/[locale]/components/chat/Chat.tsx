@@ -19,11 +19,15 @@ import {
 } from 'microsoft-cognitiveservices-speech-sdk'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
+import { Toast, useToasts } from '../toast/Toast'
 
 const SAMPLE_RATE = 24000
 
 export default function Chat() {
   const i18n = useTranslations('Chat')
+  const i18nCommon = useTranslations('Common')
+
+  const [toasts, addToast, removeToast] = useToasts()
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
@@ -52,11 +56,14 @@ export default function Chat() {
     if (isAudioAutoplaying.current || !audioContextRef.current) {
       return
     }
+    const audioContext = audioContextRef.current
+    if (audioContext.state == 'suspended') {
+      audioContext.resume()
+    }
     if (!isSafari()) {
-      // Non-Webkit browsers don't need this
+      // Non-Webkit browsers don't need the rest
       return
     }
-    const audioContext = audioContextRef.current
     const dummyBuffer = audioContext.createBuffer(1, 1, 22050)
     const source = audioContext.createBufferSource()
     source.buffer = dummyBuffer
@@ -132,6 +139,7 @@ export default function Chat() {
           throw new Error('No response returned!')
         }
       } catch (e) {
+        addToast(i18nCommon('error'))
         console.error('Error generating response', e)
         setStreaming(false)
         setHistory([...newHistory]) // Remove the loading message
@@ -174,12 +182,13 @@ export default function Chat() {
         await newAudioMessage.loadAudioMetadata()
         setHistory([...newHistory, newAudioMessage])
       } catch (e) {
+        addToast(i18nCommon('error'))
         console.error('Error while reading LLM response', e)
       }
       await releaseOutputAudioResources()
       setStreaming(false)
     },
-    [releaseOutputAudioResources]
+    [addToast, i18nCommon, releaseOutputAudioResources]
   )
 
   /* Send user text message */
@@ -199,6 +208,7 @@ export default function Chat() {
       try {
         audioStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true })
       } catch (e) {
+        addToast(i18nCommon('error'))
         console.error('Error getting audio stream', e)
         setConfiguringAudio(false)
         return
@@ -209,6 +219,9 @@ export default function Chat() {
       await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
     }
     const audioContext = audioContextRef.current
+    if (audioContext.state == 'suspended') {
+      audioContext.resume()
+    }
     const source = (audioSourceRef.current = audioContext.createMediaStreamSource(audioStreamRef.current))
     const processorNode = (processorNodeRef.current = new AudioWorkletNode(audioContext, 'MonoProcessor'))
     const buffers: Int16Array[][] = (audioBuffersRef.current = [])
@@ -279,7 +292,7 @@ export default function Chat() {
       await releaseInputAudioResources()
       setTranscribing(false)
     }
-  }, [isSafari, releaseInputAudioResources])
+  }, [addToast, i18nCommon, isSafari, releaseInputAudioResources])
 
   const stopRecording = useCallback(async () => {
     setConfiguringAudio(true)
@@ -313,6 +326,9 @@ export default function Chat() {
   return (
     /* overflow-hidden prevents sticky div from jumping */
     <main className='flex-1 h-full relative overflow-hidden' onClick={enableAudioAutoplay}>
+      {toasts.map((toast) => (
+        <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
+      ))}
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
         <div className='after:content-["_💬"]'>{i18n('header.title')}</div>
       </header>
