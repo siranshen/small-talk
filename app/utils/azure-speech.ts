@@ -71,12 +71,12 @@ export interface SpeechSynthesisTask {
   text: string
 }
 
-export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, text: string, lang: Language): Promise<ArrayBuffer> {
+export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, lang: Language, text: string): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
       `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang.speechName}">
         <voice name="${lang.voiceNames[0].code}">
-          <mstts:express-as style="cheerful">
+          <mstts:express-as style="cheerful" styledegree="0.5">
             <prosody rate="+10.00%">
               ${text}
             </prosody>
@@ -137,7 +137,7 @@ export class SpeechSynthesisTaskProcessor {
         return
       }
       try {
-        const audioData = await generateSpeech(this.speechSynthesizer, task.text, this.lang)
+        const audioData = await generateSpeech(this.speechSynthesizer, this.lang, task.text)
         this.audioPlayQueue?.push({ audioData })
       } catch (e) {
         console.error('Error generating speech', e)

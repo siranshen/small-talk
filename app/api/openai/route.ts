@@ -1,15 +1,23 @@
 import { PAUSE_TOKEN } from '@/app/utils/chat-message'
+import dedent from 'dedent'
 import { ParsedEvent, ReconnectInterval, createParser } from 'eventsource-parser'
 import { NextRequest, NextResponse } from 'next/server'
 
 const URL = 'https://api.openai.com/v1/chat/completions'
 
 const constructSystemPrompt = (language: string, speakerName: string) => {
-  return `You are ${speakerName}, a native ${language} speaker, talking to a person that is a non-native speaker.
-    Talk in an informal tone as a friend.
-    Keep your response short.
-    Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations. \
-    For example: "Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?"`
+  return dedent`You are ${speakerName}, a native ${language} speaker, talking to a person that is a non-native speaker.
+
+  ## Rules
+  - Talk in an informal tone as a friend.
+  - Keep your response concise.
+  - Ask question or change the subject if the conversation is not going well.
+  - Ask one question at a time.
+
+  ## Output Format
+  - Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations.
+  For example:
+  - "Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?"`
 }
 
 export async function POST(request: NextRequest) {
