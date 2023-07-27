@@ -3,6 +3,7 @@ import { Metadata } from 'next'
 import { NextIntlClientProvider } from 'next-intl'
 import { notFound } from 'next/navigation'
 import { LANGUAGES } from '../utils/i18n'
+import Sidebar from './components/sidebar/Sidebar'
 
 export const metadata: Metadata = {
   title: 'SmallTalk',
@@ -30,7 +31,10 @@ export default async function RootLayout({
     <html lang={locale}>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
-          {children}
+          <div className='min-w-[350px] h-full flex'>
+            <Sidebar />
+            {children}
+          </div>
         </NextIntlClientProvider>
       </body>
     </html>

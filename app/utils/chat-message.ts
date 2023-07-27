@@ -8,7 +8,6 @@ export class ChatMessage {
   // The actual text that will be sent to the AI
   private llmText: string
   private streaming: boolean = false
-  private stored: boolean = false
 
   constructor(text: string, isAi: boolean, isStreaming?: boolean) {
     this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '').replaceAll(PAUSE_TOKEN, '')
@@ -37,14 +36,6 @@ export class ChatMessage {
 
   isStreaming(): boolean {
     return this.streaming
-  }
-
-  isStored(): boolean {
-    return this.stored
-  }
-
-  markStored(): void {
-    this.stored = true
   }
 
   toGPTMessage(): GPTMessage {

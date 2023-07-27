@@ -19,7 +19,8 @@ import {
 } from 'microsoft-cognitiveservices-speech-sdk'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
-import { Toast, useToasts } from '../toast/Toast'
+import { Toast } from '../toast/Toast'
+import useToasts from '@/app/hooks/toast'
 
 const SAMPLE_RATE = 24000
 
@@ -176,6 +177,7 @@ export default function Chat() {
           }
           setHistory([...newHistory, new ChatMessage(lastMessage, true, true)])
         }
+        setStreaming(false)
         speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
         const audioBlob = await speechSynthesisTaskProcessor.finish()
         const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
@@ -186,7 +188,6 @@ export default function Chat() {
         console.error('Error while reading LLM response', e)
       }
       await releaseOutputAudioResources()
-      setStreaming(false)
     },
     [addToast, i18nCommon, releaseOutputAudioResources]
   )
