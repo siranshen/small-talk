@@ -89,6 +89,7 @@ export interface MessageStates {
   isConfiguringAudio: boolean
   isTranscribing: boolean
   shouldShowAiText: boolean
+  isPlayingAudio: boolean
 }
 
 export const PAUSE_TOKEN = '§'

@@ -33,13 +33,14 @@ export default function Chat() {
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [history, setHistory] = useState<ChatMessage[]>([])
 
-  const isAudioAutoplaying = useRef<boolean>(false)
+  const isAutoplayEnabled = useRef<boolean>(false)
   const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
   const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
   const processorNodeRef = useRef<AudioWorkletNode | null>(null)
   const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
   const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null)
+  const speechSynthesisTaskProcessorRef = useRef<SpeechSynthesisTaskProcessor | null>(null)
   const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
   const audioBuffersRef = useRef<Int16Array[][]>([])
   const lastMessageRef = useRef<string>('')
@@ -47,6 +48,7 @@ export default function Chat() {
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
   const [shouldShowAiText, setShowText] = useState<boolean>(true)
+  const [isPlayingAudio, setPlayingAudio] = useState<boolean>(false)
 
   const isSafari = useCallback(() => {
     return navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1
@@ -54,7 +56,7 @@ export default function Chat() {
 
   /* A workaround to unlock autoplay on Webkit browsers */
   const enableAudioAutoplay = useCallback(async () => {
-    if (isAudioAutoplaying.current || !audioContextRef.current) {
+    if (isAutoplayEnabled.current || !audioContextRef.current) {
       return
     }
     const audioContext = audioContextRef.current
@@ -71,7 +73,7 @@ export default function Chat() {
     source.loop = true
     source.connect(audioContext.destination)
     source.start()
-    isAudioAutoplaying.current = true
+    isAutoplayEnabled.current = true
   }, [isSafari])
 
   useEffect(() => {
@@ -157,13 +159,13 @@ export default function Chat() {
         speechConfig,
         null as unknown as AudioConfig
       ))
-      const speechSynthesisTaskProcessor = new SpeechSynthesisTaskProcessor(
+      const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
         audioContextRef.current as AudioContext,
         speechSynthesizer,
         SAMPLE_RATE,
         learningLanguage
-      )
-      speechSynthesisTaskProcessor.start()
+      ))
+      ssProcessor.start()
       try {
         while (!done) {
           const { value, done: doneReading } = await reader.read()
@@ -172,14 +174,15 @@ export default function Chat() {
           lastMessage += chunkValue
           const pauseIndex = lastMessage.lastIndexOf(PAUSE_TOKEN)
           if (pauseIndex > lastPauseIndex) {
-            speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
+            ssProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex, pauseIndex) })
             lastPauseIndex = pauseIndex + PAUSE_TOKEN.length
           }
           setHistory([...newHistory, new ChatMessage(lastMessage, true, true)])
         }
+        ssProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
         setStreaming(false)
-        speechSynthesisTaskProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
-        const audioBlob = await speechSynthesisTaskProcessor.finish()
+        setPlayingAudio(true)
+        const audioBlob = await ssProcessor.drain()
         const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
         await newAudioMessage.loadAudioMetadata()
         setHistory([...newHistory, newAudioMessage])
@@ -188,9 +191,17 @@ export default function Chat() {
         console.error('Error while reading LLM response', e)
       }
       await releaseOutputAudioResources()
+      ssProcessor.complete()
+      setStreaming(false)
+      setPlayingAudio(false)
     },
     [addToast, i18nCommon, releaseOutputAudioResources]
   )
+
+  const stopAudio = useCallback(async () => {
+    await speechSynthesisTaskProcessorRef.current?.stop()
+    setPlayingAudio(false)
+  }, [])
 
   /* Send user text message */
   const sendText = useCallback(
@@ -344,7 +355,8 @@ export default function Chat() {
           </div>
         </div>
         <ChatInput
-          messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText }}
+          messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText, isPlayingAudio }}
+          stopAudio={stopAudio}
           startRecording={startRecording}
           stopRecording={stopRecording}
           sendTextMessage={sendText}

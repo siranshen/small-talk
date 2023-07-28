@@ -101,8 +101,13 @@ export class SpeechSynthesisTaskProcessor {
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
   private lang: Language
+
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
   private speechSynthesisQueue: QueueObject<SpeechSynthesisTask> | null = null
+  private currentPlaying: AudioBufferSourceNode | null = null
+  private running: boolean = false
+  private waitPromise: Promise<void> | null = null
+  private waitResolve: (() => void) | null = null
 
   constructor(audioContext: AudioContext, speechSynthesizer: SpeechSynthesizer, sampleRate: number, lang: Language) {
     this.audioContext = audioContext
@@ -112,8 +117,15 @@ export class SpeechSynthesisTaskProcessor {
   }
 
   start(): void {
+    this.waitPromise = new Promise<void>((resolve) => {
+      this.waitResolve = resolve
+    })
+    this.running = true
     this.audioPlayQueue = queue(async (task: AudioPlayTask, _) => {
       this.audioBuffers.push(task.audioData)
+      if (!this.running) {
+        return
+      }
       const tempAudioBlob = exportBufferInWav(this.sampleRate, 1, task.audioData)
       let decodedBuffer: AudioBuffer
       try {
@@ -125,6 +137,7 @@ export class SpeechSynthesisTaskProcessor {
       const source = this.audioContext.createBufferSource()
       source.buffer = decodedBuffer
       source.connect(this.audioContext.destination)
+      this.currentPlaying = source
       await new Promise<void>((resolve) => {
         source.onended = () => {
           resolve()
@@ -150,9 +163,26 @@ export class SpeechSynthesisTaskProcessor {
     await this.speechSynthesisQueue?.push(task)
   }
 
-  async finish(): Promise<Blob> {
-    await this.speechSynthesisQueue?.drain()
-    await this.audioPlayQueue?.drain()
+  async drain(): Promise<Blob> {
+    if (!this.speechSynthesisQueue?.idle()) {
+      await this.speechSynthesisQueue?.drain()
+    }
+    if (!this.audioPlayQueue?.idle()) {
+      await this.audioPlayQueue?.drain()
+    }
     return exportBuffersInWav(this.sampleRate, 1, this.audioBuffers)
+  }
+
+  async stop(): Promise<void> {
+    if (!this.running) {
+      return
+    }
+    this.running = false
+    this.currentPlaying?.stop()
+    await this.waitPromise
+  }
+
+  complete(): void {
+    this.waitResolve?.()
   }
 }

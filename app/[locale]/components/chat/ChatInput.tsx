@@ -23,12 +23,14 @@ function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string;
 
 export default function ChatInput({
   messageStates,
+  stopAudio,
   startRecording,
   stopRecording,
   sendTextMessage,
   setShowText,
 }: {
   messageStates: MessageStates
+  stopAudio: Function
   startRecording: Function
   stopRecording: Function
   sendTextMessage: Function
@@ -81,12 +83,16 @@ export default function ChatInput({
           <button
             id='mic-btn'
             disabled={messageStates.isStreaming || messageStates.isConfiguringAudio}
-            onClick={() => (messageStates.isTranscribing ? stopRecording() : startRecording())}
-            className={`${messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''} solid-button rounded-full relative mr-2`}
+            onClick={() =>
+              messageStates.isPlayingAudio ? stopAudio() : messageStates.isTranscribing ? stopRecording() : startRecording()
+            }
+            className={`${
+              messageStates.isTranscribing ? 'animate-pulse !bg-red-600' : ''
+            } solid-button rounded-full relative mr-2`}
           >
             {messageStates.isConfiguringAudio ? (
               <MicLoading width={16} height={16} alt='loading' />
-            ) : messageStates.isTranscribing ? (
+            ) : messageStates.isTranscribing || messageStates.isPlayingAudio ? (
               <MicStopIcon width={16} height={16} alt='stop' />
             ) : (
               <MicIcon width={16} height={16} alt='mic' />
