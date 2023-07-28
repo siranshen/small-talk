@@ -1,39 +1,18 @@
 import { QueueObject, queue } from 'async'
-import { SpeechConfig, SpeechRecognizer, SpeechSynthesizer } from 'microsoft-cognitiveservices-speech-sdk'
-import { AudioPlayTask, exportBufferInWav, exportBuffersInWav } from './audio'
+import { AudioPlayTask, exportAudioInWav, exportBufferInWav, exportBuffersInWav } from './audio'
+import {
+  AudioConfig,
+  AudioInputStream,
+  AudioStreamFormat,
+  CancellationDetails,
+  PushAudioInputStream,
+  ResultReason,
+  SpeechConfig,
+  SpeechRecognizer,
+  SpeechSynthesisOutputFormat,
+  SpeechSynthesizer,
+} from 'microsoft-cognitiveservices-speech-sdk'
 import { Language } from './i18n'
-
-export async function startRecognition(speechRecognizer: SpeechRecognizer | null): Promise<void> {
-  if (!speechRecognizer) {
-    return Promise.resolve()
-  }
-  return new Promise<void>((resolve, reject) => {
-    speechRecognizer.startContinuousRecognitionAsync(
-      () => {
-        resolve()
-      },
-      (err) => {
-        reject(err)
-      }
-    )
-  })
-}
-
-export async function stopRecognition(speechRecognizer: SpeechRecognizer | null): Promise<void> {
-  if (!speechRecognizer) {
-    return Promise.resolve()
-  }
-  return new Promise<void>((resolve, reject) => {
-    speechRecognizer.stopContinuousRecognitionAsync(
-      () => {
-        resolve()
-      },
-      (err) => {
-        reject(err)
-      }
-    )
-  })
-}
 
 const VALIDITY_DURATION = 9 * 60 * 1000 // Azure Speech access tokens are valid for 10 minutes. Using 9 minutes
 let azureToken = {
@@ -42,7 +21,7 @@ let azureToken = {
   lastRetrieved: 0, // Unix timestamp in ms
 }
 
-export async function getSpeechConfig(): Promise<SpeechConfig> {
+async function getSpeechConfig(): Promise<SpeechConfig> {
   if (azureToken.lastRetrieved + VALIDITY_DURATION < Date.now()) {
     // Token is about to expire. Get a new one
     try {
@@ -96,12 +75,12 @@ export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, lang:
 }
 
 export class SpeechSynthesisTaskProcessor {
-  private speechSynthesizer: SpeechSynthesizer
   private audioContext: AudioContext
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
   private lang: Language
 
+  private speechSynthesizer: SpeechSynthesizer | null = null
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
   private speechSynthesisQueue: QueueObject<SpeechSynthesisTask> | null = null
   private currentPlaying: AudioBufferSourceNode | null = null
@@ -109,14 +88,16 @@ export class SpeechSynthesisTaskProcessor {
   private waitPromise: Promise<void> | null = null
   private waitResolve: (() => void) | null = null
 
-  constructor(audioContext: AudioContext, speechSynthesizer: SpeechSynthesizer, sampleRate: number, lang: Language) {
+  constructor(audioContext: AudioContext, sampleRate: number, lang: Language) {
     this.audioContext = audioContext
-    this.speechSynthesizer = speechSynthesizer
     this.sampleRate = sampleRate
     this.lang = lang
   }
 
-  start(): void {
+  async init(): Promise<void> {
+    const speechConfig = await getSpeechConfig()
+    speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw24Khz16BitMonoPcm
+    this.speechSynthesizer = new SpeechSynthesizer(speechConfig, null as unknown as AudioConfig)
     this.waitPromise = new Promise<void>((resolve) => {
       this.waitResolve = resolve
     })
@@ -149,6 +130,9 @@ export class SpeechSynthesisTaskProcessor {
       if (task.text.trim() === '') {
         return
       }
+      if (!this.speechSynthesizer) {
+        return
+      }
       try {
         const audioData = await generateSpeech(this.speechSynthesizer, this.lang, task.text)
         this.audioPlayQueue?.push({ audioData })
@@ -163,7 +147,7 @@ export class SpeechSynthesisTaskProcessor {
     await this.speechSynthesisQueue?.push(task)
   }
 
-  async drain(): Promise<Blob> {
+  async exportAudio(): Promise<Blob> {
     if (!this.speechSynthesisQueue?.idle()) {
       await this.speechSynthesisQueue?.drain()
     }
@@ -184,5 +168,133 @@ export class SpeechSynthesisTaskProcessor {
 
   complete(): void {
     this.waitResolve?.()
+  }
+
+  releaseResources(): void {
+    this.speechSynthesizer?.close()
+  }
+}
+
+export class SpeechRecognitionProcessor {
+  private audioContext: AudioContext
+  private audioStream: MediaStream
+  private lang: Language
+  private isSafari: boolean
+
+  private audioSource: MediaStreamAudioSourceNode | null = null
+  private processorNode: AudioWorkletNode | null = null
+  private pushStream: PushAudioInputStream | null = null
+  private buffers: Int16Array[][] = []
+  private speechRecognizer: SpeechRecognizer | null = null
+  private lastMessage: string = ''
+
+  constructor(audioContext: AudioContext, audioStream: MediaStream, lang: Language, isSafari: boolean) {
+    this.audioContext = audioContext
+    this.audioStream = audioStream
+    this.lang = lang
+    this.isSafari = isSafari
+  }
+
+  async init(): Promise<void> {
+    this.audioSource = this.audioContext.createMediaStreamSource(this.audioStream)
+    this.processorNode = new AudioWorkletNode(this.audioContext, 'MonoProcessor')
+    const pushStream = (this.pushStream = AudioInputStream.createPushStream(
+      AudioStreamFormat.getWaveFormatPCM(this.audioContext.sampleRate, 16, 1)
+    ))
+    this.processorNode.port.onmessage = (event) => {
+      switch (event.data.type) {
+        case 'interm':
+          this.buffers.push(event.data.buffers)
+          break
+        case 'final':
+          pushStream.write(event.data.buffer)
+          break
+        default:
+          console.error('Unhandled data', event.data)
+      }
+    }
+    const audioConfig = AudioConfig.fromStreamInput(this.pushStream)
+    const speechConfig = await getSpeechConfig()
+    speechConfig.speechRecognitionLanguage = this.lang.speechName
+    this.speechRecognizer = new SpeechRecognizer(speechConfig, audioConfig)
+
+    this.speechRecognizer.recognized = (_, event) => {
+      let result = event.result
+      switch (result.reason) {
+        case ResultReason.RecognizedSpeech:
+          console.log('Speech recognized', result.text)
+          if (this.lastMessage === '') {
+            this.lastMessage = result.text
+          } else if (this.lang.spaceDelimited) {
+            // Add space for English or other space-delimited languages
+            this.lastMessage += ' ' + result.text
+          } else {
+            this.lastMessage += result.text
+          }
+          break
+        case ResultReason.NoMatch:
+          console.log('Speech could not be recognized.')
+          break
+        case ResultReason.Canceled:
+          console.log(`Speech recognization canceled: ${CancellationDetails.fromResult(result)}`)
+          break
+        default:
+          console.log('Unknown recognition result received.', result)
+      }
+    }
+
+    this.audioSource?.connect(this.processorNode as AudioNode)
+    if (this.isSafari) {
+      // Safari requires connecting to destination to start recording
+      this.processorNode?.connect(this.audioContext.destination)
+    }
+  }
+
+  async start(): Promise<void> {
+    await new Promise<void>((resolve, reject) => {
+      if (!this.speechRecognizer) {
+        reject('Speech recognizer not initialized')
+        return
+      }
+      this.speechRecognizer?.startContinuousRecognitionAsync(
+        () => {
+          resolve()
+        },
+        (err) => {
+          reject(err)
+        }
+      )
+    })
+  }
+
+  async stopAndGetResult(): Promise<string> {
+    this.audioSource?.disconnect()
+    this.processorNode?.port.close()
+    this.processorNode?.disconnect()
+    this.pushStream?.close()
+    return await new Promise<string>((resolve, reject) => {
+      if (!this.speechRecognizer) {
+        resolve(this.lastMessage)
+        return
+      }
+      this.speechRecognizer.stopContinuousRecognitionAsync(
+        () => {
+          resolve(this.lastMessage)
+        },
+        (err) => {
+          reject(err)
+        }
+      )
+    })
+  }
+
+  exportAudio(): Blob {
+    return exportAudioInWav(this.audioContext.sampleRate, this.buffers)
+  }
+
+  releaseResources(): void {
+    this.audioStream?.getTracks().forEach((track) => track.stop())
+    this.pushStream?.close()
+    this.speechRecognizer?.close()
   }
 }

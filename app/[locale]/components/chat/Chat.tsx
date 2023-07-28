@@ -4,19 +4,7 @@ import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
-import { SpeechSynthesisTaskProcessor, getSpeechConfig, startRecognition, stopRecognition } from '@/app/utils/azure-speech'
-import { exportAudioInWav } from '@/app/utils/audio'
-import {
-  AudioConfig,
-  AudioInputStream,
-  AudioStreamFormat,
-  CancellationDetails,
-  PushAudioInputStream,
-  ResultReason,
-  SpeechRecognizer,
-  SpeechSynthesisOutputFormat,
-  SpeechSynthesizer,
-} from 'microsoft-cognitiveservices-speech-sdk'
+import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
 import Toast from '@/app/components/toast/Toast'
@@ -34,16 +22,9 @@ export default function Chat() {
   const [history, setHistory] = useState<ChatMessage[]>([])
 
   const isAutoplayEnabled = useRef<boolean>(false)
-  const audioStreamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)
-  const audioSourceRef = useRef<MediaStreamAudioSourceNode | null>(null)
-  const processorNodeRef = useRef<AudioWorkletNode | null>(null)
-  const speechRecognizerRef = useRef<SpeechRecognizer | null>(null)
-  const speechSynthesizerRef = useRef<SpeechSynthesizer | null>(null)
+  const speechRecognitionProcessorRef = useRef<SpeechRecognitionProcessor | null>(null)
   const speechSynthesisTaskProcessorRef = useRef<SpeechSynthesisTaskProcessor | null>(null)
-  const pushAudioInputStreamRef = useRef<PushAudioInputStream | null>(null)
-  const audioBuffersRef = useRef<Int16Array[][]>([])
-  const lastMessageRef = useRef<string>('')
   const [isConfiguringAudio, setConfiguringAudio] = useState<boolean>(false)
   const [isTranscribing, setTranscribing] = useState<boolean>(false)
   const [isStreaming, setStreaming] = useState<boolean>(false)
@@ -98,28 +79,18 @@ export default function Chat() {
     chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
   }, [history, isTranscribing])
 
-  const releaseInputAudioResources = useCallback(async () => {
-    audioStreamRef.current?.getTracks().forEach((track) => track.stop())
-    audioStreamRef.current = null
-    pushAudioInputStreamRef.current?.close()
-    pushAudioInputStreamRef.current = null
-    speechRecognizerRef.current?.close()
-    speechRecognizerRef.current = null
-    audioBuffersRef.current = []
-  }, [])
-
-  const releaseOutputAudioResources = useCallback(async () => {
-    speechSynthesizerRef.current?.close()
-    speechSynthesizerRef.current = null
-  }, [])
-
   /* Request LLM to generate response and then synthesize voice */
   const generateResponse = useCallback(
     async (newHistory: ChatMessage[]) => {
       setStreaming(true)
       setHistory([...newHistory, new ChatMessage('', true, true)])
       const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
-      let response, speechConfig
+      const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
+        audioContextRef.current as AudioContext,
+        SAMPLE_RATE,
+        learningLanguage
+      ))
+      let response
       try {
         const llmCallPromise = fetch('/api/openai', {
           method: 'POST',
@@ -132,8 +103,8 @@ export default function Chat() {
             speakerName: learningLanguage.voiceNames[0].name, // TODO customize
           }),
         })
-        const speechConfigPromise = getSpeechConfig()
-        ;[response, speechConfig] = await Promise.all([llmCallPromise, speechConfigPromise])
+        const ssProcessorInitPromise = ssProcessor.init()
+        ;[response] = await Promise.all([llmCallPromise, ssProcessorInitPromise])
 
         if (!response.ok) {
           throw new Error(response.statusText)
@@ -154,18 +125,6 @@ export default function Chat() {
       let done = false
       let lastMessage = '',
         lastPauseIndex = 0
-      speechConfig.speechSynthesisOutputFormat = SpeechSynthesisOutputFormat.Raw24Khz16BitMonoPcm
-      const speechSynthesizer = (speechSynthesizerRef.current = new SpeechSynthesizer(
-        speechConfig,
-        null as unknown as AudioConfig
-      ))
-      const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
-        audioContextRef.current as AudioContext,
-        speechSynthesizer,
-        SAMPLE_RATE,
-        learningLanguage
-      ))
-      ssProcessor.start()
       try {
         while (!done) {
           const { value, done: doneReading } = await reader.read()
@@ -182,7 +141,7 @@ export default function Chat() {
         ssProcessor.pushTask({ text: lastMessage.substring(lastPauseIndex) })
         setStreaming(false)
         setPlayingAudio(true)
-        const audioBlob = await ssProcessor.drain()
+        const audioBlob = await ssProcessor.exportAudio()
         const newAudioMessage = new AudioChatMessage(lastMessage, true, audioBlob)
         await newAudioMessage.loadAudioMetadata()
         setHistory([...newHistory, newAudioMessage])
@@ -190,12 +149,12 @@ export default function Chat() {
         addToast(i18nCommon('error'))
         console.error('Error while reading LLM response', e)
       }
-      await releaseOutputAudioResources()
+      ssProcessor.releaseResources()
       ssProcessor.complete()
       setStreaming(false)
       setPlayingAudio(false)
     },
-    [addToast, i18nCommon, releaseOutputAudioResources]
+    [addToast, i18nCommon]
   )
 
   const stopAudio = useCallback(async () => {
@@ -216,116 +175,65 @@ export default function Chat() {
 
   const startRecording = useCallback(async () => {
     setConfiguringAudio(true)
-    if (!audioStreamRef.current) {
-      try {
-        audioStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true })
-      } catch (e) {
-        addToast(i18nCommon('error'))
-        console.error('Error getting audio stream', e)
-        setConfiguringAudio(false)
-        return
-      }
-    }
-    if (!audioContextRef.current) {
-      audioContextRef.current = new AudioContext()
-      await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
-    }
-    const audioContext = audioContextRef.current
-    if (audioContext.state == 'suspended') {
-      audioContext.resume()
-    }
-    const source = (audioSourceRef.current = audioContext.createMediaStreamSource(audioStreamRef.current))
-    const processorNode = (processorNodeRef.current = new AudioWorkletNode(audioContext, 'MonoProcessor'))
-    const buffers: Int16Array[][] = (audioBuffersRef.current = [])
-    const pushStream = (pushAudioInputStreamRef.current = AudioInputStream.createPushStream(
-      AudioStreamFormat.getWaveFormatPCM(audioContext.sampleRate, 16, 1)
-    ))
-    processorNode.port.onmessage = (event) => {
-      switch (event.data.type) {
-        case 'interm':
-          buffers.push(event.data.buffers)
-          break
-        case 'final':
-          pushStream.write(event.data.buffer)
-          break
-        default:
-          console.error('Unhandled data', event.data)
-      }
-    }
-    const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
-    const audioConfig = AudioConfig.fromStreamInput(pushStream)
     try {
-      const speechConfig = await getSpeechConfig()
-      speechConfig.speechRecognitionLanguage = learningLanguage.speechName
-      speechRecognizerRef.current = new SpeechRecognizer(speechConfig, audioConfig)
+      const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      if (!audioContextRef.current) {
+        audioContextRef.current = new AudioContext()
+        await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
+      }
+      const audioContext = audioContextRef.current
+      if (audioContext.state == 'suspended') {
+        audioContext.resume()
+      }
+      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
+      speechRecognitionProcessorRef.current = new SpeechRecognitionProcessor(
+        audioContext,
+        audioStream,
+        learningLanguage,
+        isSafari()
+      )
     } catch (e) {
-      await releaseInputAudioResources()
+      addToast(i18nCommon('error'))
+      console.error('Error initializing audio', e)
       setConfiguringAudio(false)
       return
     }
-    const speechRecognizer = speechRecognizerRef.current
+    const srProcessor = speechRecognitionProcessorRef.current
 
-    lastMessageRef.current = ''
-    speechRecognizer.recognized = (_, event) => {
-      let result = event.result
-      switch (result.reason) {
-        case ResultReason.RecognizedSpeech:
-          console.log('Speech recognized', result.text)
-          if (lastMessageRef.current === '') {
-            lastMessageRef.current = result.text
-          } else if (learningLanguage.spaceDelimited) {
-            // Add space for English or other space-delimited languages
-            lastMessageRef.current += ' ' + result.text
-          } else {
-            lastMessageRef.current += result.text
-          }
-          break
-        case ResultReason.NoMatch:
-          console.log('Speech could not be recognized.')
-          break
-        case ResultReason.Canceled:
-          console.log(`Speech recognization canceled: ${CancellationDetails.fromResult(result)}`)
-          break
-        default:
-          console.log('Unknown recognition result received.', result)
-      }
-    }
-    source.connect(processorNode) // Start recording
-    if (isSafari()) {
-      // Safari requires connecting to destination to start recording
-      processorNode.connect(audioContext.destination)
-    }
-    setConfiguringAudio(false)
-    setTranscribing(true)
     try {
-      await startRecognition(speechRecognizer)
+      await srProcessor.init()
+      setConfiguringAudio(false)
+      setTranscribing(true)
+      await srProcessor.start()
     } catch (e) {
-      console.error('Error starting recognition', e)
-      await releaseInputAudioResources()
+      srProcessor.releaseResources()
+      addToast(i18nCommon('error'))
+      console.error('Error starting speech recognition', e)
+      setConfiguringAudio(false)
       setTranscribing(false)
     }
-  }, [addToast, i18nCommon, isSafari, releaseInputAudioResources])
+  }, [addToast, i18nCommon, isSafari])
 
   const stopRecording = useCallback(async () => {
-    setConfiguringAudio(true)
-    audioSourceRef.current?.disconnect()
-    processorNodeRef.current?.port.close()
-    processorNodeRef.current?.disconnect()
-    audioSourceRef.current = null
-    processorNodeRef.current = null
-    pushAudioInputStreamRef.current?.close()
-    try {
-      await stopRecognition(speechRecognizerRef.current)
-    } catch (e) {
-      console.error('Error stopping recognition', e)
+    if (!speechRecognitionProcessorRef.current) {
+      return
     }
-    const audioBlob = exportAudioInWav(audioContextRef.current?.sampleRate ?? SAMPLE_RATE, audioBuffersRef.current)
-    await releaseInputAudioResources()
+    setConfiguringAudio(true)
+    let lastMessage = ''
+    try {
+      lastMessage = await speechRecognitionProcessorRef.current.stopAndGetResult()
+    } catch (e) {
+      addToast(i18nCommon('error'))
+      console.error('Error stopping recognition', e)
+      speechRecognitionProcessorRef.current?.releaseResources()
+      setConfiguringAudio(false)
+      return
+    }
+    const audioBlob = speechRecognitionProcessorRef.current.exportAudio()
+    speechRecognitionProcessorRef.current?.releaseResources()
     setTranscribing(false)
     setConfiguringAudio(false)
 
-    const lastMessage = lastMessageRef.current
-    lastMessageRef.current = ''
     if (lastMessage.trim()) {
       const newAudioMessage = new AudioChatMessage(lastMessage, false, audioBlob)
       await newAudioMessage.loadAudioMetadata()
@@ -333,7 +241,7 @@ export default function Chat() {
       setHistory(newHistory)
       await generateResponse(newHistory)
     }
-  }, [generateResponse, history, releaseInputAudioResources])
+  }, [addToast, generateResponse, history, i18nCommon])
 
   return (
     /* overflow-hidden prevents sticky div from jumping */
