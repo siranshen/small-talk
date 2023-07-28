@@ -45,7 +45,7 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || messageStates.isStreaming || messageStates.isConfiguringAudio || messageStates.isTranscribing) {
+      if (!input || messageStates.isStreaming || messageStates.isConfiguringAudio || messageStates.isTranscribing || messageStates.isPlayingAudio) {
         return
       }
       sendTextMessage(input)
