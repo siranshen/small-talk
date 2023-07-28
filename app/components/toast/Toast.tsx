@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 
-export function Toast({
+export default function Toast({
   id,
   message,
   duration,

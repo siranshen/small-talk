@@ -19,7 +19,7 @@ import {
 } from 'microsoft-cognitiveservices-speech-sdk'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
-import { Toast } from '../toast/Toast'
+import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
 
 const SAMPLE_RATE = 24000

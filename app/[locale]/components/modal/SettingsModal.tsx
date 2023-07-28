@@ -1,9 +1,9 @@
 'use client'
 
 import { LANGUAGES, LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/i18n'
-import SamePageModal from './SamePageModal'
+import SamePageModal from '@/app/components/modal/SamePageModal'
+import Select from '@/app/components/form/Select'
 import { useTranslations } from 'next-intl'
-import Select from '../form/Select'
 import { useCallback, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next-intl/client'
 
