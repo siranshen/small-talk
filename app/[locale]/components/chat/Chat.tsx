@@ -2,7 +2,7 @@
 
 import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AudioChatMessage, ChatMessage, PAUSE_TOKEN } from '@/app/utils/chat-message'
+import { AudioChatMessage, CONVO_STORAGE_KEY, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/app/utils/chat-message'
 import ChatInput from './ChatInput'
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
@@ -12,13 +12,26 @@ import useToasts from '@/app/hooks/toast'
 
 const SAMPLE_RATE = 24000
 
+/* Custom hook that stores conversation history to session storage when Chat unmounts */
+function useConvo() {
+  const [convo, setConvo] = useState<ChatMessage[]>([])
+  const convoRef = useRef<ChatMessage[]>([])
+  convoRef.current = convo
+  useEffect(() => {
+    return () => {
+      sessionStorage.setItem(CONVO_STORAGE_KEY, serializeConvo(convoRef.current))
+    }
+  }, [])
+  return [convo, setConvo] as const
+}
+
 export default function Chat() {
   const i18n = useTranslations('Chat')
   const i18nCommon = useTranslations('Common')
   const [toasts, addToast, removeToast] = useToasts()
 
   const chatContainerRef = useRef<HTMLDivElement>(null)
-  const [convo, setConvo] = useState<ChatMessage[]>([])
+  const [convo, setConvo] = useConvo()
 
   const isAutoplayEnabled = useRef<boolean>(false)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -92,7 +105,7 @@ export default function Chat() {
       ))
       let response
       try {
-        const llmCallPromise = fetch('/api/openai', {
+        const llmCallPromise = fetch('/api/openai/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -154,7 +167,7 @@ export default function Chat() {
       setStreaming(false)
       setPlayingAudio(false)
     },
-    [addToast, i18nCommon]
+    [addToast, i18nCommon, setConvo]
   )
 
   const stopAudio = useCallback(async () => {
@@ -170,7 +183,7 @@ export default function Chat() {
       setConvo(newConvo)
       await generateResponse(newConvo)
     },
-    [convo, generateResponse]
+    [convo, generateResponse, setConvo]
   )
 
   const startRecording = useCallback(async () => {
@@ -241,7 +254,7 @@ export default function Chat() {
       setConvo(newConvo)
       await generateResponse(newConvo)
     }
-  }, [addToast, generateResponse, convo, i18nCommon])
+  }, [addToast, i18nCommon, convo, setConvo, generateResponse])
 
   return (
     /* overflow-hidden prevents sticky div from jumping */

@@ -3,11 +3,12 @@ import MicIcon from '@/public/icons/mic.svg'
 import MicLoading from '@/public/icons/mic-loading.svg'
 import MicStopIcon from '@/public/icons/mic-stop.svg'
 import PlusIcon from '@/public/icons/plus.svg'
-import TrashbinIcon from '@/public/icons/trashbin.svg'
+import ReviewIcon from '@/public/icons/review.svg'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.css'
 import { MessageStates } from '@/app/utils/chat-message'
 import { useTranslations } from 'next-intl'
+import { useRouter } from 'next-intl/client'
 
 function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: MouseEventHandler }) {
   return (
@@ -37,6 +38,7 @@ export default function ChatInput({
   setShowText: Function
 }) {
   const i18n = useTranslations('Chat')
+  const router = useRouter()
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [input, setInput] = useState<string>('')
@@ -119,9 +121,9 @@ export default function ChatInput({
               onClick={() => setShowText(!messageStates.shouldShowAiText)}
             />
             <TooltipItem
-              icon={<TrashbinIcon width={16} height={16} alt='' />}
-              text={i18n('controls.clear')}
-              onClick={() => window.location.reload()}
+              icon={<ReviewIcon width={16} height={16} alt='' />}
+              text={i18n('controls.review')}
+              onClick={() => router.push('/review')}
             />
           </div>
         </div>

@@ -2,20 +2,19 @@ import { v4 as uuidv4 } from 'uuid'
 import { AudioMetadata, getMetadataFromWav } from './audio'
 
 export class ChatMessage {
-  private text: string
-  private isAi: boolean
-  private id: string = uuidv4()
-  // The actual text that will be sent to the AI
-  private llmText: string
-  private streaming: boolean = false
+  protected text: string
+  protected isAi: boolean
+  protected id: string
+  // The actual text that will be displayed
+  protected displayedText: string
+  protected streaming: boolean
 
-  constructor(text: string, isAi: boolean, isStreaming?: boolean) {
-    this.text = text.replaceAll(` ${PAUSE_TOKEN}`, '').replaceAll(PAUSE_TOKEN, '')
-    this.llmText = text
+  constructor(text: string, isAi: boolean, isStreaming: boolean = false, id?: string) {
+    this.text = text
+    this.displayedText = text.replaceAll(` ${PAUSE_TOKEN}`, '').replaceAll(PAUSE_TOKEN, '')
     this.isAi = isAi
-    if (isStreaming) {
-      this.streaming = isStreaming
-    }
+    this.streaming = isStreaming
+    this.id = id || uuidv4()
   }
 
   getType(): string {
@@ -31,7 +30,7 @@ export class ChatMessage {
   }
 
   getText(): string {
-    return this.text
+    return this.displayedText
   }
 
   isStreaming(): boolean {
@@ -41,17 +40,29 @@ export class ChatMessage {
   toGPTMessage(): GPTMessage {
     return {
       role: this.isAi ? 'assistant' : 'user',
-      content: this.llmText,
+      content: this.text,
     }
+  }
+
+  toObject(): object {
+    return {
+      text: this.text,
+      isAi: this.isAi,
+      id: this.id,
+    }
+  }
+
+  static fromObject(obj: any): ChatMessage {
+    return new ChatMessage(obj.text, obj.isAi, false, obj.id)
   }
 }
 
 export const AUDIO_VOLUMN_BIN_COUNT = 39
 
 export class AudioChatMessage extends ChatMessage {
-  private audio: Blob
-  private audioSrc: string
-  private audioMetadata: AudioMetadata | null = null
+  protected audio: Blob
+  protected audioSrc: string
+  protected audioMetadata: AudioMetadata | null = null
 
   constructor(text: string, isAi: boolean, audio: Blob) {
     super(text, isAi)
@@ -93,3 +104,12 @@ export interface MessageStates {
 }
 
 export const PAUSE_TOKEN = '§'
+export const CONVO_STORAGE_KEY = 'convo'
+
+export function serializeConvo(convo: ChatMessage[]): string {
+  return JSON.stringify(convo.map((m) => m.toObject()))
+}
+
+export function deserializeConvo(serializedConvo: string): ChatMessage[] {
+  return JSON.parse(serializedConvo).map((m: any) => ChatMessage.fromObject(m))
+}

@@ -3,6 +3,7 @@
 import GithubLogo from '@/public/icons/github-mark.svg'
 import Logo from '@/public/icons/logo.svg'
 import SettingsIcon from '@/public/icons/settings.svg'
+import NewChatIcon from '@/public/icons/new.svg'
 import { useState } from 'react'
 import SidebarToggleButton from './SidebarToggleButton'
 import Link from 'next/link'
@@ -47,7 +48,7 @@ export default function Sidebar() {
               <div className='mb-4 leading-6'>{i18n('notice')}</div>
               <div className='flex flex-col gap-2 my-6'>
                 <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} onClick={() => setSettingsOpen(true)} />
-                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={Logo} disabled onClick={() => {}}/>
+                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} disabled onClick={() => {}}/>
                 <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}}/>
               </div>
             </div>
