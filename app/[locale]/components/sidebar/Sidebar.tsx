@@ -44,12 +44,17 @@ export default function Sidebar() {
             </div>
 
             <div className='flex-grow'>
-              <div className='mb-4 leading-6'>{i18n('intro')}</div>
-              <div className='mb-4 leading-6'>{i18n('notice')}</div>
+              {i18n.rich('intro', {
+                p: (paragraph) => <div className='mb-4 leading-6'>{paragraph}</div>,
+              })}
               <div className='flex flex-col gap-2 my-6'>
-                <SidebarFunctionButton text={i18n('functions.settings')} Icon={SettingsIcon} onClick={() => setSettingsOpen(true)} />
-                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} disabled onClick={() => {}}/>
-                <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}}/>
+                <SidebarFunctionButton
+                  text={i18n('functions.settings')}
+                  Icon={SettingsIcon}
+                  onClick={() => setSettingsOpen(true)}
+                />
+                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} disabled onClick={() => {}} />
+                <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}} />
               </div>
             </div>
             <footer className='border-t pt-4 text-sm'>

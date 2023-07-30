@@ -1,7 +1,6 @@
 {
   "Sidebar": {
-    "intro": "¡Bienvenido a SmallTalk! Aquí es donde puedes practicar tus habilidades en un idioma extranjero o segundo idioma con un IA.",
-    "notice": "Este proyecto aún está siendo trabajado activamente. ¡Mantente al tanto!",
+    "intro": "<p>¡Bienvenido a SmallTalk! Aquí es donde puedes practicar tus habilidades en un idioma extranjero o segundo idioma con un IA.</p><p>Este proyecto aún está siendo trabajado activamente. ¡Mantente al tanto!</p>",
     "functions": {
       "settings": "Ajustes",
       "newChat": "Nueva Chat",
@@ -30,6 +29,19 @@
       },
       "review": "Ver la revisión"
     }
+  },
+  "Review": {
+    "header": {
+      "title": "Revisión"
+    },
+    "evaluationCard": {
+      "noConvo": "No se encontró ningún chat...",
+      "rounds": "Rondas",
+      "wordsUsed": "Palabras Usadas",
+      "charactersUsed": "Caracteres Usados",
+      "intro": "<p>🥳🥳🥳</p><p>Aquí tienes una evaluación de tu chat.</p>"
+    },
+    "qa": "¿Alguna pregunta sobre esta evaluación? ¡Siéntete libre de preguntar!"
   },
   "Common": {
     "confirm": "Confirmar",

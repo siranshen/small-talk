@@ -1,9 +1,9 @@
 'use client'
 
-import { ChatLineGroup, LoadingChatLineGroup } from './ChatLineGroup'
+import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatLineGroup'
+import ChatInput from './ChatInput'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, CONVO_STORAGE_KEY, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/app/utils/chat-message'
-import ChatInput from './ChatInput'
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'

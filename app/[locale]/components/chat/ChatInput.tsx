@@ -5,7 +5,7 @@ import MicStopIcon from '@/public/icons/mic-stop.svg'
 import PlusIcon from '@/public/icons/plus.svg'
 import ReviewIcon from '@/public/icons/review.svg'
 import { MouseEventHandler, useEffect, useRef, useState } from 'react'
-import styles from './Chat.module.css'
+import styles from '@/app/components/chat/Chat.module.css'
 import { MessageStates } from '@/app/utils/chat-message'
 import { useTranslations } from 'next-intl'
 import { useRouter } from 'next-intl/client'
@@ -47,16 +47,18 @@ export default function ChatInput({
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
-      if (!input || messageStates.isStreaming || messageStates.isConfiguringAudio || messageStates.isTranscribing || messageStates.isPlayingAudio) {
+      if (
+        !input ||
+        messageStates.isStreaming ||
+        messageStates.isConfiguringAudio ||
+        messageStates.isTranscribing ||
+        messageStates.isPlayingAudio
+      ) {
         return
       }
       sendTextMessage(input)
       setInput('')
     }
-  }
-
-  function handleInput(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    setInput(e.target.value)
   }
 
   useEffect(() => {
@@ -76,8 +78,8 @@ export default function ChatInput({
           ref={textareaRef}
           rows={1}
           placeholder={i18n('input.placeholder')}
-          className='flex-1 border-none resize-none leading-5 max-h-24 mr-[4.75rem] focus:outline-0'
-          onInput={handleInput}
+          className='flex-1 border-none resize-none leading-5 min-h-[1.25em] max-h-24 mr-[4.75rem] focus:outline-0'
+          onInput={(e: React.ChangeEvent<HTMLTextAreaElement>) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
           value={input}
         ></textarea>

@@ -1,7 +1,6 @@
 {
   "Sidebar": {
-    "intro": "歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。",
-    "notice": "本項目尚處於密集開發階段。新功能敬請期待！",
+    "intro": "<p>歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。</p><p>本項目尚處於密集開發階段。新功能敬請期待！</p>",
     "functions": {
       "settings": "設置",
       "newChat": "新對話",
@@ -30,6 +29,19 @@
       },
       "review": "查看評估"
     }
+  },
+  "Review": {
+    "header": {
+      "title": "評估"
+    },
+    "evaluationCard": {
+      "noConvo": "未找到對話...",
+      "rounds": "對話輪數",
+      "wordsUsed": "使用單詞數",
+      "charactersUsed": "使用字數",
+      "intro": "<p>🥳🥳🥳</p><p>以下是一份針對該對話的評估。</p>"
+    },
+    "qa": "對於這份評估你有什麼疑問嗎？請隨時提問！"
   },
   "Common": {
     "confirm": "確認",

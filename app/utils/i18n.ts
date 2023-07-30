@@ -2,6 +2,7 @@ export interface Language {
   name: string
   locale: string
   spaceDelimited: boolean
+  characterBased: boolean
   speechName: string
   voiceNames: VoiceName[]
 }
@@ -17,6 +18,7 @@ export const LANGUAGES: Language[] = [
     name: 'English',
     locale: 'en',
     spaceDelimited: true,
+    characterBased: false,
     speechName: 'en-US',
     voiceNames: [
       {
@@ -35,6 +37,7 @@ export const LANGUAGES: Language[] = [
     name: '简体中文',
     locale: 'zh-cn',
     spaceDelimited: false,
+    characterBased: true,
     speechName: 'zh-CN',
     voiceNames: [
       {
@@ -53,6 +56,7 @@ export const LANGUAGES: Language[] = [
     name: '繁体中文',
     locale: 'zh-tw',
     spaceDelimited: false,
+    characterBased: true,
     speechName: 'zh-TW',
     voiceNames: [
       {
@@ -71,6 +75,7 @@ export const LANGUAGES: Language[] = [
     name: '日本語',
     locale: 'ja',
     spaceDelimited: false,
+    characterBased: true,
     speechName: 'ja-JP',
     voiceNames: [
       {
@@ -89,6 +94,7 @@ export const LANGUAGES: Language[] = [
     name: '한국어',
     locale: 'ko',
     spaceDelimited: true,
+    characterBased: true,
     speechName: 'ko-KR',
     voiceNames: [
       {
@@ -107,6 +113,7 @@ export const LANGUAGES: Language[] = [
     name: 'Español',
     locale: 'es',
     spaceDelimited: true,
+    characterBased: false,
     speechName: 'es-ES',
     voiceNames: [
       {

@@ -1,7 +1,6 @@
 {
   "Sidebar": {
-    "intro": "Welcome to SmallTalk! This is where you get to practice your foreign or second language skills with an AI.",
-    "notice": "This project is still being actively worked on. Stay tuned!",
+    "intro": "<p>Welcome to SmallTalk! This is where you get to practice your foreign or second language skills with an AI.</p><p>This project is still being actively worked on. Stay tuned!</p>",
     "functions": {
       "settings": "Settings",
       "newChat": "New Chat",
@@ -30,6 +29,19 @@
       },
       "review": "See review"
     }
+  },
+  "Review": {
+    "header": {
+      "title": "Review"
+    },
+    "evaluationCard": {
+      "noConvo": "No chat was found...",
+      "rounds": "Rounds",
+      "wordsUsed": "Words Used",
+      "charactersUsed": "Characters Used",
+      "intro": "<p>🥳🥳🥳</p><p>Here's an evaluation of your chat.</p>"
+    },
+    "qa": "Any questions regarding this evaluation? Feel free to ask!"
   },
   "Common": {
     "confirm": "Confirm",
