@@ -1,7 +1,7 @@
 import { ParsedEvent, ReconnectInterval, createParser } from "eventsource-parser"
 import { GPTMessage } from "./chat-message"
 
-export default async function getResponseStream(systemMessage: string, messages: GPTMessage[], ): Promise<ReadableStream<any>> {
+export default async function getResponseStream(systemMessage: string, messages: GPTMessage[], temperature: number = 0.8): Promise<ReadableStream<any>> {
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     headers: {
       'Content-Type': 'application/json',
@@ -20,8 +20,8 @@ export default async function getResponseStream(systemMessage: string, messages:
         },
         ...messages,
       ],
+      temperature,
       max_tokens: 1000,
-      temperature: 0.8,
       stream: true,
     }),
   })

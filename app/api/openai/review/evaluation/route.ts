@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
         evalLanguage,
         messages.map((msg: GPTMessage) => `${msg.role}: ${msg.content}`).join('\n')
       ),
-      []
+      [],
+      0
     )
     return new NextResponse(stream)
   } catch (e) {

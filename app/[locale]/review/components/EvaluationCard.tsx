@@ -3,7 +3,8 @@ import { LANGUAGES, LANGUAGES_MAP, SYSTEM_LANG_FIELD } from '@/app/utils/i18n'
 import { useTranslations } from 'next-intl'
 import { Caveat } from 'next/font/google'
 import { memo, useEffect, useState } from 'react'
-import Loading from './Loading'
+import { remark } from 'remark'
+import html from 'remark-html'
 
 const handwrittenFont = Caveat({
   weight: '700',
@@ -20,7 +21,8 @@ async function fetchEvaluation(
   convo: ChatMessage[],
   systemLang: string,
   learningLang: string,
-  setEvaluationText: (evaluationText: string) => void,
+  setEvaluationText: (text: string) => void,
+  setEvaluationHtml: (html: string) => void,
   setLoaded: (loaded: boolean) => void
 ): Promise<void> {
   const response = await fetch('/api/openai/review/evaluation', {
@@ -52,7 +54,9 @@ async function fetchEvaluation(
     const { value, done: doneReading } = await reader.read()
     done = doneReading
     evaluationText += decoder.decode(value)
+    const processedContent = await remark().use(html).process(evaluationText)
     setEvaluationText(evaluationText)
+    setEvaluationHtml(processedContent.toString())
   }
 }
 
@@ -75,6 +79,7 @@ function EvaluationCard({
   const [rounds, setRounds] = useState<number>(0)
   const [wordsUsed, setWordsUsed] = useState<number>(0)
   const [evaluationText, setEvaluationText] = useState<string>('')
+  const [evaluationHtml, setEvaluationHtml] = useState<string>('')
   evaluationRef.current = evaluationText
 
   useEffect(() => {
@@ -100,7 +105,7 @@ function EvaluationCard({
     setWordsUsed(wordsUsed)
 
     const systemLanguage = LANGUAGES_MAP[localStorage.getItem(SYSTEM_LANG_FIELD) ?? LANGUAGES[0].locale]
-    fetchEvaluation(convo, systemLanguage.locale, learningLanguage.locale, setEvaluationText, setLoaded)
+    fetchEvaluation(convo, systemLanguage.locale, learningLanguage.locale, setEvaluationText, setEvaluationHtml, setLoaded)
   }, [i18nCommon, setLoaded, storageData.convo, storageData.learningLang])
 
   if (storageData.convo === null || deserializeConvo(storageData.convo).length === 0) {
@@ -126,7 +131,7 @@ function EvaluationCard({
       {i18n.rich('evaluationCard.intro', {
         p: (paragraph) => <div className='mb-4 leading-6'>{paragraph}</div>,
       })}
-      <div className='mb-4 leading-6'>{evaluationText}</div>
+      <div className='mb-4 leading-6 list-disc' dangerouslySetInnerHTML={{ __html: evaluationHtml }}></div>
     </EvaluationCardLayout>
   )
 }
