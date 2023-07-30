@@ -21,8 +21,8 @@ const constructSystemPrompt = (language: string, evalLanguage: string, convo: st
 
 export async function POST(request: NextRequest) {
   if (process.env.NODE_ENV === 'development') {
-    // await new Promise((resolve) => setTimeout(resolve, 1000))
-    // return new NextResponse('This is a dummy answer used in development mode. Uncomment this line to use the API.')
+    await new Promise((resolve) => setTimeout(resolve, 1000))
+    return new NextResponse('This is a dummy answer used in development mode. Uncomment this line to use the API.')
   }
   const { messages, language, evalLanguage } = await request.json()
   try {

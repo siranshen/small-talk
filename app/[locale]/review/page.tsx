@@ -32,9 +32,18 @@ export default function Review() {
 
   const storageData = useStorageData()
   const evaluationRef = useRef<string>('')
+  const chatContainerRef = useRef<HTMLDivElement>(null)
   const [evaluationLoaded, setEvaluationLoaded] = useState<boolean>(false)
   const [convo, setConvo] = useState<ChatMessage[]>([new ChatMessage(i18n('qa'), true)])
   const [isLoadingMessage, setLoadingMessage] = useState<boolean>(false)
+
+  /* Scroll to bottom upon new message */
+  useEffect(() => {
+    if (!chatContainerRef.current) {
+      return
+    }
+    chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
+  }, [convo])
 
   const sendText = useCallback(
     async (message: string) => {
@@ -101,7 +110,7 @@ export default function Review() {
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
         <div className='after:content-["_📃"]'>Review</div>
       </header>
-      <div className='my-0 mx-auto h-full overflow-scroll'>
+      <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         {!storageData ||
           (!evaluationLoaded && (
             <div className='h-full'>
