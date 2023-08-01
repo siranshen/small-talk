@@ -62,7 +62,7 @@ export default function Review() {
           },
           body: JSON.stringify({
             evaluation: evaluationRef.current,
-            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()),
+            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage(true)),
             language: systemLanguage.name,
             evalLanguage: learningLanguage.name,
           }),
@@ -108,7 +108,7 @@ export default function Review() {
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
-        <div className='after:content-["_📃"]'>Review</div>
+        <div className='after:content-["_📃"]'>{i18n('header.title')}</div>
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         {!storageData ||

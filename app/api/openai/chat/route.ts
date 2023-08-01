@@ -12,10 +12,10 @@ const constructSystemPrompt = (language: string, speakerName: string) => {
   - Ask question or change the subject if the conversation is not going well.
   - Ask one question at a time.
 
-  ## Output Format
+  ## Response Format
   - Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations.
-  For example:
-  - "Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?"`
+  ### Example
+  Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?`
 }
 
 export async function POST(request: NextRequest) {

@@ -37,10 +37,10 @@ export class ChatMessage {
     return this.streaming
   }
 
-  toGPTMessage(): GPTMessage {
+  toGPTMessage(useDisplayedText: boolean = false): GPTMessage {
     return {
       role: this.isAi ? 'assistant' : 'user',
-      content: this.text,
+      content: useDisplayedText? this.displayedText : this.text,
     }
   }
 

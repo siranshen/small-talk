@@ -1,7 +1,7 @@
 'use client'
 
 import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatLineGroup'
-import ChatInput from './ChatInput'
+import ChatInput from './components/ChatInput'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AudioChatMessage, CONVO_STORAGE_KEY, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/app/utils/chat-message'
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
@@ -9,6 +9,7 @@ import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
 import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
+import useLocaleLoader from '@/app/hooks/locale'
 
 const SAMPLE_RATE = 24000
 
@@ -26,6 +27,7 @@ function useConvo() {
 }
 
 export default function Chat() {
+  useLocaleLoader()
   const i18n = useTranslations('Chat')
   const i18nCommon = useTranslations('Common')
   const [toasts, addToast, removeToast] = useToasts()
