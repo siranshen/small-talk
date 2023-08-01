@@ -51,7 +51,7 @@ export default function SamePageModal({
     >
       <div
         ref={wrapperRef}
-        className={`${fadeOut ? '-translate-y-4': ''} transition duration-300 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full sm:w-10/12 md:w-8/12 lg:w-1/2 max-w-[420px] p-6`}
+        className={`absolute top-1/2 left-1/2 -translate-x-1/2 ${fadeOut ? 'translate-y-0': '-translate-y-1/2'} transition duration-300 w-full sm:w-10/12 md:w-8/12 lg:w-1/2 max-w-[420px] p-6`}
       >
         <div className='rounded-lg border border-solid border-zinc-200 bg-white shadow-[0_0_10px_rgba(0,0,0,.1)] px-8 py-6'>
           {children}
