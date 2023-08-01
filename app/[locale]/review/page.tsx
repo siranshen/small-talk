@@ -113,15 +113,13 @@ export default function Review() {
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         {!storageData ||
           (!evaluationLoaded && (
-            <div className='h-full'>
-              <div className='max-w-[650px] my-10 mx-auto p-3'>
-                <Loading />
-              </div>
+            <div className='max-w-[650px] my-10 mx-auto p-3'>
+              <Loading />
             </div>
           ))}
         {storageData && (
-          <div className={`${evaluationLoaded ? '' : 'hidden'} h-full`}>
-            <div className='max-w-[650px] my-0 mx-auto p-3'>
+          <>
+            <div className={`${evaluationLoaded ? '' : 'hidden'} max-w-[650px] my-0 mx-auto p-3`}>
               <EvaluationCard storageData={storageData} evaluationRef={evaluationRef} setLoaded={setEvaluationLoaded} />
               {convo.map((msg) => (
                 <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText />
@@ -130,7 +128,7 @@ export default function Review() {
               <div className='clear-both h-32'></div>
             </div>
             <QAInput isStreaming={isLoadingMessage} sendMessage={sendText} />
-          </div>
+          </>
         )}
       </div>
     </main>

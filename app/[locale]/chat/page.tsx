@@ -268,14 +268,12 @@ export default function Chat() {
         <div className='after:content-["_💬"]'>{i18n('header.title')}</div>
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
-        <div className='h-full'>
-          <div className='max-w-[650px] my-0 mx-auto p-3'>
-            {convo.map((msg) => (
-              <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
-            ))}
-            {isTranscribing && <LoadingChatLineGroup isAi={false} />}
-            <div className='clear-both h-32'></div>
-          </div>
+        <div className='max-w-[650px] my-0 mx-auto p-3'>
+          {convo.map((msg) => (
+            <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
+          ))}
+          {isTranscribing && <LoadingChatLineGroup isAi={false} />}
+          <div className='clear-both h-32'></div>
         </div>
         <ChatInput
           messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText, isPlayingAudio }}
