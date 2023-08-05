@@ -134,6 +134,3 @@ export const LANGUAGES_MAP = LANGUAGES.reduce((acc, cur) => {
   acc[cur.locale] = cur
   return acc
 }, {} as Record<string, Language>)
-
-export const SYSTEM_LANG_FIELD = 'systemLang'
-export const LEARNING_LANG_FIELD = 'learningLang'

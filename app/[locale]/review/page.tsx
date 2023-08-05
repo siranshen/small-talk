@@ -3,8 +3,9 @@
 import useLocaleLoader from '@/app/hooks/locale'
 import EvaluationCard, { StorageData } from './components/EvaluationCard'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { CONVO_STORAGE_KEY, ChatMessage } from '@/app/utils/chat-message'
-import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/i18n'
+import { ChatMessage } from '@/app/utils/chat-message'
+import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
+import { CONVO_STORAGE_KEY, LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/local-keys'
 import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatLineGroup'
 import QAInput from './components/QAInput'
 import useToasts from '@/app/hooks/toast'
@@ -108,7 +109,7 @@ export default function Review() {
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
-        <div className='after:content-["_📃"]'>{i18n('header.title')}</div>
+        <div className='after:content-["📃"] after:ml-2'>{i18n('header.title')}</div>
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         {!storageData ||

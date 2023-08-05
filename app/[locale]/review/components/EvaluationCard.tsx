@@ -1,5 +1,6 @@
 import { ChatMessage, deserializeConvo } from '@/app/utils/chat-message'
-import { LANGUAGES, LANGUAGES_MAP, SYSTEM_LANG_FIELD } from '@/app/utils/i18n'
+import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
+import { SYSTEM_LANG_FIELD } from '@/app/utils/local-keys'
 import { useTranslations } from 'next-intl'
 import { Caveat } from 'next/font/google'
 import { memo, useEffect, useState } from 'react'

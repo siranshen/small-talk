@@ -13,7 +13,7 @@ import { useRouter } from 'next-intl/client'
 function TooltipItem({ icon, text, onClick }: { icon: JSX.Element; text: string; onClick: MouseEventHandler }) {
   return (
     <button
-      className='border-none rounded-md bg-white px-2 py-1 text-left text-sm text-inherit flex items-center hover:bg-gray-100'
+      className='border-none rounded-md bg-white px-2 py-1 text-left text-sm text-inherit whitespace-nowrap flex items-center hover:bg-gray-100'
       onClick={onClick}
     >
       <span className='h-4 mr-2'>{icon}</span>
@@ -113,7 +113,7 @@ export default function ChatInput({
             id='options-tooltip'
             className={`${
               isTooltipOpen ? '' : 'opacity-0 scale-0'
-            } absolute bottom-[100%] right-4 z-30 mb-2 rounded-lg rounded-br-none bg-white border border-solid border-zinc-200 shadow-[0_0_10px_rgba(0,0,0,.1)] hover:shadow-[0_0_10px_rgba(0,0,0,.15)] w-[160px] flex flex-col p-2 origin-bottom-right transition-all duration-300`}
+            } absolute bottom-[100%] right-4 z-30 mb-2 rounded-lg rounded-br-none bg-white border border-solid border-zinc-200 shadow-[0_0_10px_rgba(0,0,0,.1)] hover:shadow-[0_0_10px_rgba(0,0,0,.15)] min-w-[160px] flex flex-col p-2 origin-bottom-right transition-all duration-300`}
           >
             <TooltipItem
               icon={<DocsIcon width={16} height={16} alt='' />}

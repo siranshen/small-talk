@@ -3,10 +3,11 @@
 import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatLineGroup'
 import ChatInput from './components/ChatInput'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AudioChatMessage, CONVO_STORAGE_KEY, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/app/utils/chat-message'
+import { AudioChatMessage, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/app/utils/chat-message'
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
-import { LANGUAGES, LANGUAGES_MAP, LEARNING_LANG_FIELD } from '@/app/utils/i18n'
+import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
+import { CONVO_STORAGE_KEY, LEARNING_LANG_FIELD, VOICE_NAME_FIELD } from '@/app/utils/local-keys'
 import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
 import useLocaleLoader from '@/app/hooks/locale'
@@ -100,10 +101,13 @@ export default function Chat() {
       setStreaming(true)
       setConvo([...newConvo, new ChatMessage('', true, true)])
       const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
+      const voiceIndex = sessionStorage.getItem(VOICE_NAME_FIELD) ?? '0'
+      const voice = learningLanguage.voiceNames[parseInt(voiceIndex)]
       const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
         audioContextRef.current as AudioContext,
         SAMPLE_RATE,
-        learningLanguage
+        learningLanguage,
+        voice
       ))
       let response
       try {
@@ -113,9 +117,9 @@ export default function Chat() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()),
+            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()), // TODO: Calculate tokens
             language: learningLanguage.name,
-            speakerName: learningLanguage.voiceNames[0].name, // TODO customize
+            speakerName: voice.name,
           }),
         })
         const ssProcessorInitPromise = ssProcessor.init()
@@ -265,7 +269,7 @@ export default function Chat() {
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
-        <div className='after:content-["_💬"]'>{i18n('header.title')}</div>
+        <div className='after:content-["💬"] after:ml-2'>{i18n('header.title')}</div>
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         <div className='max-w-[650px] my-0 mx-auto p-3'>

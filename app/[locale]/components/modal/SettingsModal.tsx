@@ -1,11 +1,12 @@
 'use client'
 
-import { LANGUAGES, LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/i18n'
+import { LANGUAGES } from '@/app/utils/i18n'
 import SamePageModal from '@/app/components/modal/SamePageModal'
 import Select from '@/app/components/form/Select'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next-intl/client'
+import { LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/local-keys'
 
 export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; setOpen: Function }) {
   const i18n = useTranslations('Settings')
@@ -55,10 +56,10 @@ export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; se
           ))}
         </Select>
         <div className='flex justify-end w-full mt-10'>
-          <button className='solid-button-light rounded-lg flex-[0_1_30%] mr-2' onClick={() => setOpen(false)}>
+          <button className='solid-button-light rounded-lg flex-[0_1_35%] sm:flex-[0_1_30%] mr-2' onClick={() => setOpen(false)}>
             {i18nCommon('cancel')}
           </button>
-          <button className='solid-button rounded-lg flex-[0_1_30%]' onClick={setLanguages}>
+          <button className='solid-button rounded-lg flex-[0_1_35%] sm:flex-[0_1_30%]' onClick={setLanguages}>
             {i18nCommon('confirm')}
           </button>
         </div>

@@ -104,7 +104,6 @@ export interface MessageStates {
 }
 
 export const PAUSE_TOKEN = '§'
-export const CONVO_STORAGE_KEY = 'convo'
 
 export function serializeConvo(convo: ChatMessage[]): string {
   return JSON.stringify(convo.map((m) => m.toObject()))

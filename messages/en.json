@@ -13,7 +13,23 @@
   "Settings": {
     "title": "Settings",
     "systemLang": "System language",
+    "level": "Your level",
+    "levelOptions": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
+    "SelfIntro": "Self intro",
     "learningLang": "Learning language"
+  },
+  "NewChat": {
+    "title": "New Chat",
+    "learningLang": "Learning language",
+    "character": "Character",
+    "prompt": {
+      "title": "Prompt",
+      "placeholder": "What do you want to talk about?"
+    }
   },
   "Chat": {
     "header": {

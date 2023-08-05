@@ -20,12 +20,15 @@ export default function Sidebar() {
   return (
     <>
       <SettingsModal isOpen={isSettingsOpen} setOpen={setSettingsOpen} />
+      {/* Overlay */}
       <div
         className={`${
           isOpen ? 'opacity-30 h-full [transition:opacity_300ms]' : 'opacity-0 h-0 [transition:opacity_300ms,height_1ms_300ms]'
         } bg-black fixed lg:hidden inset-0 z-10`}
         onClick={() => setOpen(false)}
       ></div>
+
+      {/* Content */}
       <div
         className={`${
           isOpen ? 'translate-x-0' : 'translate-x-[-100%]'

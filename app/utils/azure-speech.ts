@@ -12,7 +12,7 @@ import {
   SpeechSynthesisOutputFormat,
   SpeechSynthesizer,
 } from 'microsoft-cognitiveservices-speech-sdk'
-import { Language } from './i18n'
+import { Language, VoiceName } from './i18n'
 
 const VALIDITY_DURATION = 9 * 60 * 1000 // Azure Speech access tokens are valid for 10 minutes. Using 9 minutes
 let azureToken = {
@@ -50,11 +50,11 @@ export interface SpeechSynthesisTask {
   text: string
 }
 
-export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, lang: Language, text: string): Promise<ArrayBuffer> {
+export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, speechName: string, voiceCode: string, text: string): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
-      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${lang.speechName}">
-        <voice name="${lang.voiceNames[0].code}">
+      `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${speechName}">
+        <voice name="${voiceCode}">
           <mstts:express-as style="cheerful" styledegree="0.5">
             <prosody rate="+10.00%">
               ${text}
@@ -79,6 +79,7 @@ export class SpeechSynthesisTaskProcessor {
   private audioBuffers: ArrayBuffer[] = []
   private sampleRate: number
   private lang: Language
+  private voice: VoiceName
 
   private speechSynthesizer: SpeechSynthesizer | null = null
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
@@ -88,10 +89,11 @@ export class SpeechSynthesisTaskProcessor {
   private waitPromise: Promise<void> | null = null
   private waitResolve: (() => void) | null = null
 
-  constructor(audioContext: AudioContext, sampleRate: number, lang: Language) {
+  constructor(audioContext: AudioContext, sampleRate: number, lang: Language, voice: VoiceName) {
     this.audioContext = audioContext
     this.sampleRate = sampleRate
     this.lang = lang
+    this.voice = voice
   }
 
   async init(): Promise<void> {
@@ -134,7 +136,7 @@ export class SpeechSynthesisTaskProcessor {
         return
       }
       try {
-        const audioData = await generateSpeech(this.speechSynthesizer, this.lang, task.text)
+        const audioData = await generateSpeech(this.speechSynthesizer, this.lang.speechName, this.voice.code, task.text)
         this.audioPlayQueue?.push({ audioData })
       } catch (e) {
         console.error('Error generating speech', e)

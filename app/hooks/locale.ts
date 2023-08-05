@@ -1,5 +1,5 @@
-import { SYSTEM_LANG_FIELD } from "@/app/utils/i18n"
 import { useLocale } from "next-intl"
+import { SYSTEM_LANG_FIELD } from "@/app/utils/local-keys"
 import { usePathname, useRouter } from 'next-intl/client'
 import { useEffect } from "react"
 
