@@ -3,7 +3,7 @@
     "intro": "<p>¡Bienvenido a SmallTalk! Aquí es donde puedes practicar tus habilidades en un idioma extranjero o segundo idioma con un IA.</p><p>Este proyecto aún está siendo trabajado activamente. ¡Mantente al tanto!</p>",
     "functions": {
       "settings": "Ajustes",
-      "newChat": "Nueva Chat",
+      "newChat": "Nuevo Chat",
       "prevChats": "Chats Anteriores"
     },
     "footer": {
@@ -13,7 +13,21 @@
   "Settings": {
     "title": "Ajustes",
     "systemLang": "Idioma del sistema",
-    "learningLang": "Idioma de aprendizaje"
+    "level": "Tu nivel",
+    "levelOptions": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
+    "selfIntro": "Autopresentación",
+    "selfIntroPlaceholder": "¡Cuéntanos sobre ti para conocerte mejor!"
+  },
+  "NewChat": {
+    "title": "Nuevo chat",
+    "learningLang": "Idioma de aprendizaje",
+    "character": "Personaje",
+    "prompt": "Indicación",
+    "promptPlaceholder": "¿Sobre qué quieres hablar?"
   },
   "Chat": {
     "header": {

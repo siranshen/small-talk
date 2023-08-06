@@ -44,6 +44,19 @@ export default function ChatInput({
   const [input, setInput] = useState<string>('')
   const [isTooltipOpen, setTooltipOpen] = useState<boolean>(false)
 
+  /* Run once */
+  useEffect(() => {
+    router.prefetch('/review')
+  }, [router])
+
+  useEffect(() => {
+    if (!textareaRef || !textareaRef.current) {
+      return
+    }
+    textareaRef.current.style.height = '1px'
+    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
+  }, [input])
+
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
@@ -60,14 +73,6 @@ export default function ChatInput({
       setInput('')
     }
   }
-
-  useEffect(() => {
-    if (!textareaRef || !textareaRef.current) {
-      return
-    }
-    textareaRef.current.style.height = '1px'
-    textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px'
-  }, [input])
 
   return (
     <div

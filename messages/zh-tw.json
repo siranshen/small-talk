@@ -1,8 +1,8 @@
 {
   "Sidebar": {
-    "intro": "<p>歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。</p><p>本項目尚處於密集開發階段。新功能敬請期待！</p>",
+    "intro": "<p>歡迎來到SmallTalk！在這裡，你可以跟著AI練習你的外語或者第二語言。</p><p>本專案尚處於密集開發階段。新功能敬請期待！</p>",
     "functions": {
-      "settings": "設置",
+      "settings": "設定",
       "newChat": "新對話",
       "prevChats": "歷史對話"
     },
@@ -11,9 +11,23 @@
     }
   },
   "Settings": {
-    "title": "設置",
+    "title": "設定",
     "systemLang": "系統語言",
-    "learningLang": "學習語言"
+    "level": "你的水平",
+    "levelOptions": {
+      "beginner": "初學",
+      "intermediate": "中級",
+      "advanced": "進階"
+    },
+    "selfIntro": "自我介紹",
+    "selfIntroPlaceholder": "講講你自己，以便我們更好地了解你！"
+  },
+  "NewChat": {
+    "title": "新對話",
+    "learningLang": "學習語言",
+    "character": "人物",
+    "prompt": "提示詞",
+    "promptPlaceholder": "你想聊些什麼呢？"
   },
   "Chat": {
     "header": {

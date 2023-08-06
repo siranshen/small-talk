@@ -19,17 +19,15 @@
       "intermediate": "Intermediate",
       "advanced": "Advanced"
     },
-    "SelfIntro": "Self intro",
-    "learningLang": "Learning language"
+    "selfIntro": "Self intro",
+    "selfIntroPlaceholder": "Tell us about yourself so we get to know you better!"
   },
   "NewChat": {
     "title": "New Chat",
     "learningLang": "Learning language",
     "character": "Character",
-    "prompt": {
-      "title": "Prompt",
-      "placeholder": "What do you want to talk about?"
-    }
+    "prompt": "Prompt",
+    "promptPlaceholder": "What do you want to talk about?"
   },
   "Chat": {
     "header": {

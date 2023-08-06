@@ -4,18 +4,25 @@ import GithubLogo from '@/public/icons/github-mark.svg'
 import Logo from '@/public/icons/logo.svg'
 import SettingsIcon from '@/public/icons/settings.svg'
 import NewChatIcon from '@/public/icons/new.svg'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import SidebarToggleButton from './SidebarToggleButton'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import SidebarFunctionButton from './SidebarFunctionButton'
 import SettingsModal from '../modal/SettingsModal'
+import { useRouter } from 'next-intl/client'
 
 export default function Sidebar() {
   const i18n = useTranslations('Sidebar')
+  const router = useRouter()
 
   const [isOpen, setOpen] = useState<boolean>(false)
   const [isSettingsOpen, setSettingsOpen] = useState<boolean>(false)
+
+  /* Run once */
+  useEffect(() => {
+    router.prefetch('/')
+  }, [router])
 
   return (
     <>
@@ -56,7 +63,7 @@ export default function Sidebar() {
                   Icon={SettingsIcon}
                   onClick={() => setSettingsOpen(true)}
                 />
-                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} disabled onClick={() => {}} />
+                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} onClick={() => router.push('/')} />
                 <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}} />
               </div>
             </div>

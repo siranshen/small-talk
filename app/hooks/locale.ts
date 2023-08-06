@@ -1,5 +1,5 @@
 import { useLocale } from "next-intl"
-import { SYSTEM_LANG_FIELD } from "@/app/utils/local-keys"
+import { SYSTEM_LANG_KEY } from "@/app/utils/local-keys"
 import { usePathname, useRouter } from 'next-intl/client'
 import { useEffect } from "react"
 
@@ -9,7 +9,7 @@ export default function useLocaleLoader() {
   const router = useRouter()
   const pathname = usePathname()
   useEffect(() => {
-    const localLocale = localStorage.getItem(SYSTEM_LANG_FIELD)
+    const localLocale = localStorage.getItem(SYSTEM_LANG_KEY)
     if (localLocale && localLocale !== locale) {
       router.replace(pathname, { locale: localLocale })
     }

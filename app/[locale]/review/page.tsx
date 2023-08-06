@@ -5,7 +5,7 @@ import EvaluationCard, { StorageData } from './components/EvaluationCard'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { ChatMessage } from '@/app/utils/chat-message'
 import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
-import { CONVO_STORAGE_KEY, LEARNING_LANG_FIELD, SYSTEM_LANG_FIELD } from '@/app/utils/local-keys'
+import { CONVO_STORAGE_KEY, LEARNING_LANG_KEY, SYSTEM_LANG_KEY } from '@/app/utils/local-keys'
 import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatLineGroup'
 import QAInput from './components/QAInput'
 import useToasts from '@/app/hooks/toast'
@@ -17,8 +17,8 @@ function useStorageData(): StorageData | null {
   const [data, setData] = useState<StorageData | null>(null)
   useEffect(() => {
     const convo = sessionStorage.getItem(CONVO_STORAGE_KEY)
-    const learningLang = localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale
-    const systemLang = localStorage.getItem(SYSTEM_LANG_FIELD) ?? LANGUAGES[0].locale
+    const learningLang = localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale
+    const systemLang = localStorage.getItem(SYSTEM_LANG_KEY) ?? LANGUAGES[0].locale
     setData({ convo, learningLang, systemLang })
   }, [])
   return data
@@ -52,8 +52,8 @@ export default function Review() {
       const newConvo = [...convo, newMessage]
       setLoadingMessage(true)
       setConvo([...newConvo])
-      const systemLanguage = LANGUAGES_MAP[localStorage.getItem(SYSTEM_LANG_FIELD) ?? LANGUAGES[0].locale]
-      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
+      const systemLanguage = LANGUAGES_MAP[localStorage.getItem(SYSTEM_LANG_KEY) ?? LANGUAGES[0].locale]
+      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
       let response
       try {
         response = await fetch('/api/openai/review/qa', {

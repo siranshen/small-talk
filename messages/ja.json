@@ -13,7 +13,21 @@
   "Settings": {
     "title": "設定",
     "systemLang": "システム言語",
-    "learningLang": "学習言語"
+    "level": "レベル",
+    "levelOptions": {
+      "beginner": "初級",
+      "intermediate": "中級",
+      "advanced": "上級"
+    },
+    "selfIntro": "自己紹介",
+    "selfIntroPlaceholder": "自己紹介をして、あなたをよりよく理解しましょう！"
+  },
+  "NewChat": {
+    "title": "新しいチャット",
+    "learningLang": "学習言語",
+    "character": "キャラクター",
+    "prompt": "プロンプト",
+    "promptPlaceholder": "何について話したいですか？"
   },
   "Chat": {
     "header": {

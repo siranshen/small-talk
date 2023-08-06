@@ -7,7 +7,7 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next-intl/client'
 import TextArea from '@/app/components/form/TextArea'
-import { LEARNING_LANG_FIELD, VOICE_NAME_FIELD } from '@/app/utils/local-keys'
+import { LEARNING_LANG_KEY, SCENARIO_PROMPT_KEY, VOICE_NAME_KEY } from '@/app/utils/local-keys'
 
 export default function NewChatModal({
   isCustomizable,
@@ -28,23 +28,28 @@ export default function NewChatModal({
 
   const [learningLang, setLearningLang] = useState<Language | null>(null)
 
+  /* Run once */
   useEffect(() => {
+    router.prefetch('/chat')
     if (!learningLangRef.current) {
       return
     }
-    learningLangRef.current.value = localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale
+    learningLangRef.current.value = localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale
     setLearningLang(LANGUAGES_MAP[learningLangRef.current.value])
-  }, [])
+  }, [router])
 
   const configureNewChat = useCallback(() => {
     if (!learningLangRef.current || !characterRef.current) {
       return
     }
-    localStorage.setItem(LEARNING_LANG_FIELD, learningLangRef.current.value)
-    sessionStorage.setItem(VOICE_NAME_FIELD, characterRef.current.value)
+    localStorage.setItem(LEARNING_LANG_KEY, learningLangRef.current.value)
+    sessionStorage.setItem(VOICE_NAME_KEY, characterRef.current.value)
+    if (isCustomizable) {
+      sessionStorage.setItem(SCENARIO_PROMPT_KEY, promptRef.current?.value ?? '')
+    }
     setOpen(false)
     router.push('/chat')
-  }, [router, setOpen])
+  }, [isCustomizable, router, setOpen])
 
   return (
     <SamePageModal isOpen={isOpen} setOpen={setOpen}>
@@ -76,7 +81,7 @@ export default function NewChatModal({
           </Select>
         )}
         {isCustomizable && (
-          <TextArea label={i18n('prompt.title')} id='prompt' placeholder={i18n('prompt.placeholder')} ref={promptRef} />
+          <TextArea label={i18n('prompt')} id='prompt' placeholder={i18n('promptPlaceholder')} ref={promptRef} />
         )}
         <div className='flex justify-end w-full mt-10'>
           <button

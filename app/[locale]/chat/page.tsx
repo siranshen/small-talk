@@ -7,7 +7,7 @@ import { AudioChatMessage, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/ap
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
-import { CONVO_STORAGE_KEY, LEARNING_LANG_FIELD, VOICE_NAME_FIELD } from '@/app/utils/local-keys'
+import { CONVO_STORAGE_KEY, LEARNING_LANG_KEY, VOICE_NAME_KEY } from '@/app/utils/local-keys'
 import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
 import useLocaleLoader from '@/app/hooks/locale'
@@ -100,8 +100,8 @@ export default function Chat() {
     async (newConvo: ChatMessage[]) => {
       setStreaming(true)
       setConvo([...newConvo, new ChatMessage('', true, true)])
-      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
-      const voiceIndex = sessionStorage.getItem(VOICE_NAME_FIELD) ?? '0'
+      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
+      const voiceIndex = sessionStorage.getItem(VOICE_NAME_KEY) ?? '0'
       const voice = learningLanguage.voiceNames[parseInt(voiceIndex)]
       const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
         audioContextRef.current as AudioContext,
@@ -119,7 +119,10 @@ export default function Chat() {
           body: JSON.stringify({
             messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()), // TODO: Calculate tokens
             language: learningLanguage.name,
+            level: localStorage.getItem('level') ?? '',
+            selfIntro: localStorage.getItem('selfIntro') ?? '',
             speakerName: voice.name,
+            scenario: sessionStorage.getItem('scenarioPrompt') ?? 'Undefined. Can be any random topic.',
           }),
         })
         const ssProcessorInitPromise = ssProcessor.init()
@@ -204,7 +207,7 @@ export default function Chat() {
       if (audioContext.state == 'suspended') {
         audioContext.resume()
       }
-      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_FIELD) ?? LANGUAGES[0].locale]
+      const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
       speechRecognitionProcessorRef.current = new SpeechRecognitionProcessor(
         audioContext,
         audioStream,

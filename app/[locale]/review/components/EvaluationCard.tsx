@@ -1,6 +1,6 @@
 import { ChatMessage, deserializeConvo } from '@/app/utils/chat-message'
 import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
-import { SYSTEM_LANG_FIELD } from '@/app/utils/local-keys'
+import { SYSTEM_LANG_KEY } from '@/app/utils/local-keys'
 import { useTranslations } from 'next-intl'
 import { Caveat } from 'next/font/google'
 import { memo, useEffect, useState } from 'react'
@@ -105,7 +105,7 @@ function EvaluationCard({
     setRounds(rounds)
     setWordsUsed(wordsUsed)
 
-    const systemLanguage = LANGUAGES_MAP[localStorage.getItem(SYSTEM_LANG_FIELD) ?? LANGUAGES[0].locale]
+    const systemLanguage = LANGUAGES_MAP[localStorage.getItem(SYSTEM_LANG_KEY) ?? LANGUAGES[0].locale]
     fetchEvaluation(convo, systemLanguage.locale, learningLanguage.locale, setEvaluationText, setEvaluationHtml, setLoaded)
   }, [i18nCommon, setLoaded, storageData.convo, storageData.learningLang])
 
