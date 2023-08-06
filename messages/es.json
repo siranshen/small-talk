@@ -22,12 +22,91 @@
     "selfIntro": "Autopresentación",
     "selfIntroPlaceholder": "¡Cuéntanos sobre ti para conocerte mejor!"
   },
-  "NewChat": {
+  "NewChatSettings": {
     "title": "Nuevo chat",
     "learningLang": "Idioma de aprendizaje",
     "character": "Personaje",
-    "prompt": "Indicación",
-    "promptPlaceholder": "¿Sobre qué quieres hablar?"
+    "topic": "tema",
+    "topicPlaceholder": "¿Sobre qué quieres hablar?"
+  },
+  "NewChat": {
+    "header": {
+      "title": "Nuevo chat"
+    },
+    "intro": {
+      "freetalk": "Puedes iniciar una conversación libre si ya tienes un tema en mente.",
+      "preset": "O puedes seleccionar un escenario de abajo y empezar a practicar!"
+    },
+    "scenarios": {
+      "customize": {
+        "icon": "🗣️",
+        "text": "Personaliza tu tema"
+      },
+      "0": {
+        "icon": "🎬",
+        "text": "Películas favoritas"
+      },
+      "1": {
+        "icon": "🎵",
+        "text": "Música favorita"
+      },
+      "2": {
+        "icon": "📚",
+        "text": "Libros favoritos"
+      },
+      "3": {
+        "icon": "⚽",
+        "text": "Deportes favoritos"
+      },
+      "4": {
+        "icon": "🍔",
+        "text": "Cocinas del mundo"
+      },
+      "5": {
+        "icon": "🥗",
+        "text": "Comida saludable"
+      },
+      "6": {
+        "icon": "🏖️",
+        "text": "Mis mejores vacaciones"
+      },
+      "7": {
+        "icon": "🛩️",
+        "text": "Planificar mi próximo viaje"
+      },
+      "8": {
+        "icon": "😬",
+        "text": "Mi mejor amigo"
+      },
+      "9": {
+        "icon": "👪",
+        "text": "Mi familia"
+      },
+      "10": {
+        "icon": "👸",
+        "text": "Celebridades"
+      },
+      "11": {
+        "icon": "🏠",
+        "text": "Mi ciudad natal"
+      },
+      "12": {
+        "icon": "🎓",
+        "text": "Vida universitaria"
+      },
+      "13": {
+        "icon": "📈",
+        "text": "Objetivo de carrera"
+      },
+      "14": {
+        "icon": "🤠",
+        "text": "Diferencias culturales"
+      },
+      "15": {
+        "icon": "🤖",
+        "text": "¿Está la IA tomando el control?"
+      }
+    }
   },
   "Chat": {
     "header": {
@@ -60,6 +139,7 @@
   "Common": {
     "confirm": "Confirmar",
     "cancel": "Cancelar",
-    "error": "Lo siento, ocurrió un error..."
+    "error": "Lo siento, ocurrió un error...",
+    "loading": "Cargando..."
   }
 }

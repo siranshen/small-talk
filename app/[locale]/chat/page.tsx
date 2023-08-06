@@ -7,7 +7,7 @@ import { AudioChatMessage, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/ap
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
-import { CONVO_STORAGE_KEY, LEARNING_LANG_KEY, VOICE_NAME_KEY } from '@/app/utils/local-keys'
+import { CONVO_STORAGE_KEY, LEARNING_LANG_KEY, LEVEL_KEY, TOPIC_PROMPT_KEY, SELF_INTRO_KEY, VOICE_NAME_KEY, TOPIC_KEY } from '@/app/utils/local-keys'
 import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
 import useLocaleLoader from '@/app/hooks/locale'
@@ -32,7 +32,7 @@ export default function Chat() {
   const i18n = useTranslations('Chat')
   const i18nCommon = useTranslations('Common')
   const [toasts, addToast, removeToast] = useToasts()
-
+  const [topicTitle, setTopicTitle] = useState<string | null>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [convo, setConvo] = useConvo()
 
@@ -72,7 +72,9 @@ export default function Chat() {
     isAutoplayEnabled.current = true
   }, [isSafari])
 
+  /* Run once */
   useEffect(() => {
+    setTopicTitle(sessionStorage.getItem(TOPIC_KEY) ?? i18n('header.title'))
     const shouldShow = localStorage.getItem('shouldShowAiText')
     setShowText(shouldShow === null || shouldShow === 'true')
     setConfiguringAudio(true)
@@ -81,7 +83,7 @@ export default function Chat() {
     return () => {
       audioContextRef.current?.close()
     }
-  }, [])
+  }, [i18n])
 
   useEffect(() => {
     localStorage.setItem('shouldShowAiText', shouldShowAiText ? 'true' : 'false')
@@ -119,10 +121,10 @@ export default function Chat() {
           body: JSON.stringify({
             messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()), // TODO: Calculate tokens
             language: learningLanguage.name,
-            level: localStorage.getItem('level') ?? '',
-            selfIntro: localStorage.getItem('selfIntro') ?? '',
+            level: localStorage.getItem(LEVEL_KEY) ?? '',
+            selfIntro: localStorage.getItem(SELF_INTRO_KEY) ?? '',
             speakerName: voice.name,
-            scenario: sessionStorage.getItem('scenarioPrompt') ?? 'Undefined. Can be any random topic.',
+            topic: sessionStorage.getItem(TOPIC_PROMPT_KEY) ?? 'Undefined. Can be any random topic.',
           }),
         })
         const ssProcessorInitPromise = ssProcessor.init()
@@ -272,7 +274,7 @@ export default function Chat() {
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
-        <div className='after:content-["💬"] after:ml-2'>{i18n('header.title')}</div>
+        <div className='after:content-["💬"] after:ml-2'>{topicTitle ?? i18nCommon('loading')}</div>
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         <div className='max-w-[650px] my-0 mx-auto p-3'>

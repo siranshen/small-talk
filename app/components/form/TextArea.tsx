@@ -1,7 +1,13 @@
 import { Ref, forwardRef } from 'react'
 
 const TextArea = forwardRef(function Select(
-  { label, id, placeholder }: { label: string; id: string; placeholder: string },
+  {
+    label,
+    id,
+    placeholder,
+    rows = 3,
+    value = '',
+  }: { label: string; id: string; placeholder: string; rows?: number; value?: string },
   ref: Ref<HTMLTextAreaElement>
 ) {
   return (
@@ -13,9 +19,10 @@ const TextArea = forwardRef(function Select(
         id={id}
         name={id}
         ref={ref}
-        rows={4}
-        className='resize-none rounded-lg border border-solid border-zinc-300 w-full bg-inherit py-2 px-3'
+        rows={rows}
+        className='resize-none rounded-lg border border-solid border-zinc-300 w-full bg-inherit py-2 px-3 read-only:bg-gray-50'
         placeholder={placeholder}
+        {...(value ? { value: value, readOnly: true } : {})}
       ></textarea>
     </div>
   )

@@ -7,23 +7,23 @@ import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next-intl/client'
 import TextArea from '@/app/components/form/TextArea'
-import { LEARNING_LANG_KEY, SCENARIO_PROMPT_KEY, VOICE_NAME_KEY } from '@/app/utils/local-keys'
+import { LEARNING_LANG_KEY, TOPIC_KEY, TOPIC_PROMPT_KEY, VOICE_NAME_KEY } from '@/app/utils/local-keys'
 
 export default function NewChatModal({
-  isCustomizable,
   isOpen,
   setOpen,
+  topic,
 }: {
-  isCustomizable: boolean
   isOpen: boolean
-  setOpen: Function
+  setOpen: (open: boolean) => void
+  topic: string | null
 }) {
-  const i18n = useTranslations('NewChat')
+  const i18n = useTranslations('NewChatSettings')
   const i18nCommon = useTranslations('Common')
 
   const learningLangRef = useRef<HTMLSelectElement>(null)
   const characterRef = useRef<HTMLSelectElement>(null)
-  const promptRef = useRef<HTMLTextAreaElement>(null)
+  const topicRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
 
   const [learningLang, setLearningLang] = useState<Language | null>(null)
@@ -44,12 +44,16 @@ export default function NewChatModal({
     }
     localStorage.setItem(LEARNING_LANG_KEY, learningLangRef.current.value)
     sessionStorage.setItem(VOICE_NAME_KEY, characterRef.current.value)
-    if (isCustomizable) {
-      sessionStorage.setItem(SCENARIO_PROMPT_KEY, promptRef.current?.value ?? '')
+    if (topic !== null) {
+      sessionStorage.setItem(TOPIC_KEY, topic)
+      sessionStorage.setItem(TOPIC_PROMPT_KEY, topic)
+    } else {
+      sessionStorage.removeItem(TOPIC_KEY)
+      sessionStorage.setItem(TOPIC_PROMPT_KEY, topicRef.current?.value ?? '')
     }
     setOpen(false)
     router.push('/chat')
-  }, [isCustomizable, router, setOpen])
+  }, [router, setOpen, topic])
 
   return (
     <SamePageModal isOpen={isOpen} setOpen={setOpen}>
@@ -80,9 +84,14 @@ export default function NewChatModal({
             ))}
           </Select>
         )}
-        {isCustomizable && (
-          <TextArea label={i18n('prompt')} id='prompt' placeholder={i18n('promptPlaceholder')} ref={promptRef} />
-        )}
+        <TextArea
+          label={i18n('topic')}
+          id='topic'
+          rows={2}
+          placeholder={i18n('topicPlaceholder')}
+          value={topic ?? ''}
+          ref={topicRef}
+        />
         <div className='flex justify-end w-full mt-10'>
           <button
             className='solid-button-light rounded-lg flex-[0_1_35%] sm:flex-[0_1_30%] mr-2'

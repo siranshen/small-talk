@@ -22,12 +22,91 @@
     "selfIntro": "自我介紹",
     "selfIntroPlaceholder": "講講你自己，以便我們更好地了解你！"
   },
-  "NewChat": {
+  "NewChatSettings": {
     "title": "新對話",
     "learningLang": "學習語言",
     "character": "人物",
-    "prompt": "提示詞",
-    "promptPlaceholder": "你想聊些什麼呢？"
+    "topic": "話題",
+    "topicPlaceholder": "你想聊些什麼呢？"
+  },
+  "NewChat": {
+    "header": {
+      "title": "新對話"
+    },
+    "intro": {
+      "freetalk": "如果你已經有想聊的話題，你可以直接開始自由對話。",
+      "preset": "或者你可以從下面選擇一個場景，然後開始練習吧！"
+    },
+    "scenarios": {
+      "customize": {
+        "icon": "🗣️",
+        "text": "自訂你的主題"
+      },
+      "0": {
+        "icon": "🎬",
+        "text": "最喜愛的電影"
+      },
+      "1": {
+        "icon": "🎵",
+        "text": "最喜愛的音樂"
+      },
+      "2": {
+        "icon": "📚",
+        "text": "最喜愛的書籍"
+      },
+      "3": {
+        "icon": "⚽",
+        "text": "最喜愛的運動"
+      },
+      "4": {
+        "icon": "🍔",
+        "text": "世界各地的美食"
+      },
+      "5": {
+        "icon": "🥗",
+        "text": "健康食品"
+      },
+      "6": {
+        "icon": "🏖️",
+        "text": "我最美好的假期"
+      },
+      "7": {
+        "icon": "🛩",
+        "text": "規劃我的下一次旅行"
+      },
+      "8": {
+        "icon": "😬",
+        "text": "我最好的朋友"
+      },
+      "9": {
+        "icon": "👪",
+        "text": "我的家庭"
+      },
+      "10": {
+        "icon": "👸",
+        "text": "名人"
+      },
+      "11": {
+        "icon": "🏠",
+        "text": "我的家鄉"
+      },
+      "12": {
+        "icon": "🎓",
+        "text": "大學生活"
+      },
+      "13": {
+        "icon": "📈",
+        "text": "職業目標"
+      },
+      "14": {
+        "icon": "🤠",
+        "text": "文化差異"
+      },
+      "15": {
+        "icon": "🤖",
+        "text": "AI會統治世界嗎？"
+      }
+    }
   },
   "Chat": {
     "header": {
@@ -60,6 +139,7 @@
   "Common": {
     "confirm": "確認",
     "cancel": "取消",
-    "error": "抱歉，剛出了個小問題..."
+    "error": "抱歉，剛出了個小問題...",
+    "loading": "载入中..."
   }
 }

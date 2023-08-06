@@ -22,12 +22,91 @@
     "selfIntro": "Self intro",
     "selfIntroPlaceholder": "Tell us about yourself so we get to know you better!"
   },
-  "NewChat": {
+  "NewChatSettings": {
     "title": "New Chat",
     "learningLang": "Learning language",
     "character": "Character",
-    "prompt": "Prompt",
-    "promptPlaceholder": "What do you want to talk about?"
+    "topic": "Topic",
+    "topicPlaceholder": "What do you want to talk about?"
+  },
+  "NewChat": {
+    "header": {
+      "title": "New Chat"
+    },
+    "intro": {
+      "freetalk": "You can start a free talk if you already have a topic in mind.",
+      "preset": "Or you can select a scenario from below and start practicing!"
+    },
+    "scenarios": {
+      "customize": {
+        "icon": "🗣️",
+        "text": "Customize your topic"
+      },
+      "0": {
+        "icon": "🎬",
+        "text": "Favorite movies"
+      },
+      "1": {
+        "icon": "🎵",
+        "text": "Favorite music"
+      },
+      "2": {
+        "icon": "📚",
+        "text": "Favorite books"
+      },
+      "3": {
+        "icon": "⚽",
+        "text": "Favorite sports"
+      },
+      "4": {
+        "icon": "🍔",
+        "text": "Cuisines around the world"
+      },
+      "5": {
+        "icon": "🥗",
+        "text": "Healthy food"
+      },
+      "6": {
+        "icon": "🏖️",
+        "text": "My best vacation"
+      },
+      "7": {
+        "icon": "🛩",
+        "text": "Plan my next trip"
+      },
+      "8": {
+        "icon": "😬",
+        "text": "My best friend"
+      },
+      "9": {
+        "icon": "👪",
+        "text": "My family"
+      },
+      "10": {
+        "icon": "👸",
+        "text": "Celebrities"
+      },
+      "11": {
+        "icon": "🏠",
+        "text": "My hometown"
+      },
+      "12": {
+        "icon": "🎓",
+        "text": "College life"
+      },
+      "13": {
+        "icon": "📈",
+        "text": "Career goal"
+      },
+      "14": {
+        "icon": "🤠",
+        "text": "Cultural differences"
+      },
+      "15": {
+        "icon": "🤖",
+        "text": "Is AI taking over?"
+      }
+    }
   },
   "Chat": {
     "header": {
@@ -60,6 +139,7 @@
   "Common": {
     "confirm": "Confirm",
     "cancel": "Cancel",
-    "error": "Sorry, an error occurred..."
+    "error": "Sorry, an error occurred...",
+    "loading": "Loading..."
   }
 }

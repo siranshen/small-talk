@@ -3,6 +3,7 @@
 import useLocaleLoader from '@/app/hooks/locale'
 import NewChatModal from './components/modal/NewChatModal'
 import { useState } from 'react'
+import { useTranslations } from 'next-intl'
 
 function ScenarioButton({ icon, text, onClick }: { icon: string; text: string; onClick: () => void }) {
   return (
@@ -18,55 +19,44 @@ function ScenarioButton({ icon, text, onClick }: { icon: string; text: string; o
 
 export default function Home() {
   useLocaleLoader()
+  const i18n = useTranslations('NewChat')
 
   const [isModalOpen, setModalOpen] = useState<boolean>(false)
-  const [isCustomizable, setCustomizable] = useState<boolean>(false)
+  const [topic, setTopic] = useState<string | null>(null)
 
   return (
     <>
-      <NewChatModal isCustomizable={isCustomizable} isOpen={isModalOpen} setOpen={setModalOpen} />
+      <NewChatModal isOpen={isModalOpen} setOpen={setModalOpen} topic={topic} />
       <main className='flex-1 h-full relative overflow-hidden'>
         <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
-          <div className='after:content-["💬"] after:ml-2'>New Chat</div>
+          <div className='after:content-["💬"] after:ml-2'>{i18n('header.title')}</div>
         </header>
         <div className='my-0 mx-auto h-full overflow-scroll'>
           <div className='max-w-[650px] my-0 mx-auto p-3'>
-            <div className='mb-4 leading-6'>You can start a free talk if you already have a topic in mind.</div>
+            <div className='mb-4 leading-6'>{i18n('intro.freetalk')}</div>
             <div className='mb-4 leading-6 grid grid-cols-2 gap-2 sm:gap-3'>
               <ScenarioButton
-                icon='🗣️'
-                text='Customize your topic'
+                icon={i18n('scenarios.customize.icon')}
+                text={i18n('scenarios.customize.text')}
                 onClick={() => {
                   setModalOpen(true)
-                  setCustomizable(true)
+                  setTopic(null)
                 }}
               />
             </div>
-            <div className='mb-4 leading-6'>Or you can select a scenario from below and start practicing!</div>
+            <div className='mb-4 leading-6'>{i18n('intro.preset')}</div>
             <div className='pb-14 leading-6 grid grid-cols-2 gap-2 sm:gap-3'>
-              <ScenarioButton
-                icon='🎬'
-                text='Favorite movies'
-                onClick={() => {
-                  setModalOpen(true)
-                  setCustomizable(false)
-                }}
-              />
-              <ScenarioButton icon='🎵' text='Favorite music' onClick={() => {}} />
-              <ScenarioButton icon='🎮' text='Favorite games' onClick={() => {}} />
-              <ScenarioButton icon='⚽' text='Favorite sports' onClick={() => {}} />
-              <ScenarioButton icon='🍔' text='Cuisines around the world' onClick={() => {}} />
-              <ScenarioButton icon='🥗' text='Healthy food' onClick={() => {}} />
-              <ScenarioButton icon='🏖️' text='My best vacation' onClick={() => {}} />
-              <ScenarioButton icon='🛩' text='Plan my next trip' onClick={() => {}} />
-              <ScenarioButton icon='😬' text='My best friend' onClick={() => {}} />
-              <ScenarioButton icon='👪' text='My parents' onClick={() => {}} />
-              <ScenarioButton icon='👸' text='Celebrities' onClick={() => {}} />
-              <ScenarioButton icon='🏠' text='My hometown' onClick={() => {}} />
-              <ScenarioButton icon='🎓' text='College life' onClick={() => {}} />
-              <ScenarioButton icon='📈' text='Career goal' onClick={() => {}} />
-              <ScenarioButton icon='🤠' text='Cultural differences' onClick={() => {}} />
-              <ScenarioButton icon='🤖' text='Is AI taking over?' onClick={() => {}} />
+              {Array.from(Array(16).keys()).map((i) => (
+                <ScenarioButton
+                  key={i}
+                  icon={i18n(`scenarios.${i}.icon`)}
+                  text={i18n(`scenarios.${i}.text`)}
+                  onClick={() => {
+                    setModalOpen(true)
+                    setTopic(i18n(`scenarios.${i}.text`))
+                  }}
+                />
+              ))}
             </div>
           </div>
         </div>
