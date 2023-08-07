@@ -7,10 +7,20 @@ import { AudioChatMessage, ChatMessage, PAUSE_TOKEN, serializeConvo } from '@/ap
 import { SpeechRecognitionProcessor, SpeechSynthesisTaskProcessor } from '@/app/utils/azure-speech'
 import { useTranslations } from 'next-intl'
 import { LANGUAGES, LANGUAGES_MAP } from '@/app/utils/i18n'
-import { CONVO_STORAGE_KEY, LEARNING_LANG_KEY, LEVEL_KEY, TOPIC_PROMPT_KEY, SELF_INTRO_KEY, VOICE_NAME_KEY, TOPIC_KEY } from '@/app/utils/local-keys'
+import {
+  CONVO_STORAGE_KEY,
+  LEARNING_LANG_KEY,
+  LEVEL_KEY,
+  TOPIC_PROMPT_KEY,
+  SELF_INTRO_KEY,
+  VOICE_NAME_KEY,
+  TOPIC_KEY,
+} from '@/app/utils/local-keys'
 import Toast from '@/app/components/toast/Toast'
 import useToasts from '@/app/hooks/toast'
 import useLocaleLoader from '@/app/hooks/locale'
+import MicIcon from '@/public/icons/mic.svg'
+import PlusIcon from '@/public/icons/plus.svg'
 
 const SAMPLE_RATE = 24000
 
@@ -35,6 +45,7 @@ export default function Chat() {
   const [topicTitle, setTopicTitle] = useState<string | null>(null)
   const chatContainerRef = useRef<HTMLDivElement>(null)
   const [convo, setConvo] = useConvo()
+  const [started, setStarted] = useState<boolean>(false)
 
   const isAutoplayEnabled = useRef<boolean>(false)
   const audioContextRef = useRef<AudioContext | null>(null)
@@ -181,6 +192,11 @@ export default function Chat() {
     [addToast, i18nCommon, setConvo]
   )
 
+  const startChat = useCallback(async () => {
+    setStarted(true)
+    await generateResponse([])
+  }, [generateResponse])
+
   const stopAudio = useCallback(async () => {
     await speechSynthesisTaskProcessorRef.current?.stop()
     setPlayingAudio(false)
@@ -269,7 +285,7 @@ export default function Chat() {
 
   return (
     /* overflow-hidden prevents sticky div from jumping */
-    <main className='flex-1 h-full relative overflow-hidden' onClick={enableAudioAutoplay}>
+    <main className='animate-[fade-in_600ms] flex-1 h-full relative overflow-hidden' onClick={enableAudioAutoplay}>
       {toasts.map((toast) => (
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
@@ -278,11 +294,24 @@ export default function Chat() {
       </header>
       <div className='my-0 mx-auto h-full overflow-scroll' ref={chatContainerRef}>
         <div className='max-w-[650px] my-0 mx-auto p-3'>
-          {convo.map((msg) => (
-            <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
-          ))}
-          {isTranscribing && <LoadingChatLineGroup isAi={false} />}
-          <div className='clear-both h-32'></div>
+          {started ? (
+            <>
+              {convo.map((msg) => (
+                <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
+              ))}
+              {isTranscribing && <LoadingChatLineGroup isAi={false} />}
+              <div className='clear-both h-32'></div>
+            </>
+          ) : (
+            <div className='rounded-lg border border-solid border-zinc-300 mb-6 px-5 py-4'>
+              {i18n.rich('intro', {
+                p: (paragraph) => <div className='mb-4 leading-6'>{paragraph}</div>,
+                MicIcon: () => <MicIcon width={16} height={16} className='inline' />,
+                PlusIcon: () => <PlusIcon width={16} height={16} className='inline' />,
+              })}
+              <button className='solid-button rounded-lg !px-4' onClick={startChat}>{i18n('startChat')}</button>
+            </div>
+          )}
         </div>
         <ChatInput
           messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText, isPlayingAudio }}

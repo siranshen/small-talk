@@ -112,6 +112,8 @@
     "header": {
       "title": "Practicing free talk"
     },
+    "intro": "<p>Here are some simple instructions before you start.</p><p>You can either type your message below or record an audio message by clicking or tapping the <MicIcon></MicIcon> button.</p><p>When you're done chatting, you can click or tap the <PlusIcon></PlusIcon> button, and then select \"See review\" get a review of your performance.</p>",
+    "startChat": "Start chatting!",
     "input": {
       "placeholder": "Hit enter to send"
     },

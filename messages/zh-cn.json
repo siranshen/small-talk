@@ -112,6 +112,8 @@
     "header": {
       "title": "自由会话练习"
     },
+    "intro": "<p>在你开始前，以下是一些简单的说明。</p><p>你可以直接输入文字或者点击<MicIcon></MicIcon>按钮录音。</p><p>结束聊天后，你可以点击<PlusIcon></PlusIcon>按钮，然后选择\"查看评估\"获取一份针对你表现的评估报告。</p>",
+    "startChat": "开始聊天！",
     "input": {
       "placeholder": "按回车发送"
     },

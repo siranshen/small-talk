@@ -112,6 +112,8 @@
     "header": {
       "title": "Practicando conversación libre"
     },
+    "intro": "<p>Aquí tienes algunas instrucciones sencillas antes de empezar.</p><p>Puedes escribir tu mensaje a continuación o grabar un mensaje de audio haciendo clic o pulsando el botón <MicIcon></MicIcon>.</p><p>Cuando termines de chatear, puedes hacer clic o pulsar el botón <PlusIcon></PlusIcon> y luego seleccionar \"Ver la revisión\" para obtener una revisión de tu rendimiento.</p>",
+    "startChat": "¡Comienza a chatear!",
     "input": {
       "placeholder": "Presiona enter para enviar"
     },

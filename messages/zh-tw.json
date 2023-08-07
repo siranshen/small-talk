@@ -112,6 +112,8 @@
     "header": {
       "title": "自由會話練習"
     },
+    "intro": "<p>在你開始之前，以下是一些簡單的說明。</p><p>你可以直接輸入文字或者點擊<MicIcon></MicIcon>按鈕錄音。</p><p>結束聊天後，你可以點擊<PlusIcon></PlusIcon>按鈕，然後選擇\"查看評估\"以獲得一份針對你表現的評估報告。</p>",
+    "startChat": "開始聊天！",
     "input": {
       "placeholder": "按回車發送"
     },

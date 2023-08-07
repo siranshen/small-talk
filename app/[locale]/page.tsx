@@ -27,7 +27,7 @@ export default function Home() {
   return (
     <>
       <NewChatModal isOpen={isModalOpen} setOpen={setModalOpen} topic={topic} />
-      <main className='flex-1 h-full relative overflow-hidden'>
+      <main className='animate-[fade-in_600ms] flex-1 h-full relative overflow-hidden'>
         <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
           <div className='after:content-["💬"] after:ml-2'>{i18n('header.title')}</div>
         </header>

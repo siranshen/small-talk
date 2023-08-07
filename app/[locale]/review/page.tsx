@@ -104,7 +104,7 @@ export default function Review() {
   )
 
   return (
-    <main className='flex-1 h-full relative overflow-hidden'>
+    <main className='animate-[fade-in_600ms] flex-1 h-full relative overflow-hidden'>
       {toasts.map((toast) => (
         <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
       ))}
