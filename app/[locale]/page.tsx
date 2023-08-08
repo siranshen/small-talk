@@ -10,7 +10,7 @@ function ScenarioButton({ icon, text, onClick }: { icon: string; text: string; o
     <button className='solid-button-light rounded-lg !px-4 !py-3 relative text-left flex items-center' onClick={onClick}>
       <div
         before-content={icon}
-        className='before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[attr(before-content)] mr-7'
+        className='before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[attr(before-content)] mr-6'
       />
       <div>{text}</div>
     </button>

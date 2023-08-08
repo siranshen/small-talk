@@ -62,7 +62,7 @@ export default function Chat() {
   }, [])
 
   /* A workaround to unlock autoplay on Webkit browsers */
-  const enableAudioAutoplay = useCallback(async () => {
+  const enableAudioAutoplay = useCallback(() => {
     if (isAutoplayEnabled.current || !audioContextRef.current) {
       return
     }
@@ -74,13 +74,13 @@ export default function Chat() {
       // Non-Webkit browsers don't need the rest
       return
     }
+    isAutoplayEnabled.current = true
     const dummyBuffer = audioContext.createBuffer(1, 1, 22050)
     const source = audioContext.createBufferSource()
     source.buffer = dummyBuffer
     source.loop = true
     source.connect(audioContext.destination)
     source.start()
-    isAutoplayEnabled.current = true
   }, [isSafari])
 
   /* Run once */
@@ -194,8 +194,9 @@ export default function Chat() {
 
   const startChat = useCallback(async () => {
     setStarted(true)
+    enableAudioAutoplay()
     await generateResponse([])
-  }, [generateResponse])
+  }, [enableAudioAutoplay, generateResponse])
 
   const stopAudio = useCallback(async () => {
     await speechSynthesisTaskProcessorRef.current?.stop()
@@ -300,7 +301,6 @@ export default function Chat() {
                 <ChatLineGroup key={msg.getId()} message={msg} shouldShowAiText={shouldShowAiText} />
               ))}
               {isTranscribing && <LoadingChatLineGroup isAi={false} />}
-              <div className='clear-both h-32'></div>
             </>
           ) : (
             <div className='rounded-lg border border-solid border-zinc-300 mb-6 px-5 py-4'>
@@ -309,12 +309,15 @@ export default function Chat() {
                 MicIcon: () => <MicIcon width={16} height={16} className='inline' />,
                 PlusIcon: () => <PlusIcon width={16} height={16} className='inline' />,
               })}
-              <button className='solid-button rounded-lg !px-4' onClick={startChat}>{i18n('startChat')}</button>
+              <button className='solid-button rounded-lg !px-4' onClick={startChat}>
+                {i18n('startChat')}
+              </button>
             </div>
           )}
+          <div className='clear-both h-32'></div>
         </div>
         <ChatInput
-          messageStates={{ isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText, isPlayingAudio }}
+          messageStates={{ started, isConfiguringAudio, isTranscribing, isStreaming, shouldShowAiText, isPlayingAudio }}
           stopAudio={stopAudio}
           startRecording={startRecording}
           stopRecording={stopRecording}

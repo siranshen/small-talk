@@ -3,7 +3,14 @@ import getResponseStream from '@/app/utils/openai'
 import dedent from 'dedent'
 import { NextRequest, NextResponse } from 'next/server'
 
-const constructSystemPrompt = (language: string, level: string, selfIntro: string, speakerName: string, topic: string) => {
+const constructSystemPrompt = (
+  language: string,
+  level: string,
+  selfIntro: string,
+  speakerName: string,
+  topic: string,
+  isFirstMessage: boolean
+) => {
   return dedent`You are ${speakerName}, a native ${language} speaker. Your task is to talk with the user.
 
   ## Topic
@@ -11,11 +18,11 @@ const constructSystemPrompt = (language: string, level: string, selfIntro: strin
 
   ## Rules
   - Use ${language} to communicate with the user.${
-    level ? `\n- User's language skill is ${level} level. You should adjust your language accordingly.` : ''
+    level ? `\n- User's language skill is ${level} level. Adjust your word choices accordingly.` : ''
   }
   - Talk in an informal tone as a friend.
   - Keep your response concise.
-  - Adhere to the topic if it is defined.
+  - Adhere to the topic if it is defined.${isFirstMessage ? ' Start the conversation according to the topic.' : ''}
   - Ask a question or change the subject if the conversation is not going well.
   - Ask one question at a time.
 
@@ -28,7 +35,7 @@ const constructSystemPrompt = (language: string, level: string, selfIntro: strin
 export async function POST(request: NextRequest) {
   const { messages, language, level, selfIntro, speakerName, topic } = await request.json()
   try {
-    const stream = await getResponseStream(constructSystemPrompt(language, level, selfIntro, speakerName, topic), messages)
+    const stream = await getResponseStream(constructSystemPrompt(language, level, selfIntro, speakerName, topic, messages.length === 0), messages)
     return new NextResponse(stream)
   } catch (e) {
     console.log('Error calling OpenAI', e)

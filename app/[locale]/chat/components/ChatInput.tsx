@@ -62,6 +62,7 @@ export default function ChatInput({
       e.preventDefault()
       if (
         !input ||
+        !messageStates.started ||
         messageStates.isStreaming ||
         messageStates.isConfiguringAudio ||
         messageStates.isTranscribing ||
@@ -91,7 +92,7 @@ export default function ChatInput({
         <div className='absolute flex right-[calc(0.85rem+1px)] bottom-[calc(0.8rem+1px)]'>
           <button
             id='mic-btn'
-            disabled={messageStates.isStreaming || messageStates.isConfiguringAudio}
+            disabled={!messageStates.started || messageStates.isStreaming || messageStates.isConfiguringAudio}
             onClick={() =>
               messageStates.isPlayingAudio ? stopAudio() : messageStates.isTranscribing ? stopRecording() : startRecording()
             }

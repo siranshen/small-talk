@@ -96,6 +96,7 @@ export interface GPTMessage {
 }
 
 export interface MessageStates {
+  started: boolean
   isStreaming: boolean
   isConfiguringAudio: boolean
   isTranscribing: boolean
