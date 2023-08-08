@@ -6,14 +6,14 @@ People have been building many similar apps since the release of ChatGPT. They u
 
 ## Roadmap
 
-As of 7/30/2023:
-- [X] Wrap up basic small talk functionalities with text and voice in English. Sorry, it only supports English learners for the moment.
+As of 8/8/2023:
+- [X] Wrap up basic small talk functionalities with text and voice in English. ~~Sorry, it only supports English learners for the moment.~~
 - [X] Add i18n support. Yay! Now you can learn (almost) any language you want.
 - [X] Support review mode, where the AI gives you feedback in your own language on the recent conversation. You can ask AI to elaborate or explain to you when you are confused!
-- [ ] Store and load conversations based on a (file-based) database.
-- [ ] Add pre-defined scenarios, so you can learn to talk in different common scenarios.
+- [X] Add pre-defined scenarios, so you can learn to talk in different common scenarios.
+- [X] Allow self intro as a prompt so AI can know you before you even talk!
 - [ ] Support customization of AI personality and voice. You can even write your own prompt to define how your language tutor/buddy should talk like.
-- [ ] Allow self intro as a prompt so AI can know you before you even talk!
+- [ ] Store and load conversations based on a (file-based) database.
 
 There are a lot more things I should do to make the AI talk and sound more real, and, most importantly, know you well. I learned English partly by frequently talking to native speakers. You learn even faster if you have a good friend who speaks this language. The AI can be your good friend.
 
@@ -29,7 +29,7 @@ I will keep working on it. If you have any suggestions, please feel free to open
 
 ### Browser Compatibility
 
-As of 7/25/2023, it fully functions on mainstream browsers (Chrome, Edge, Firefox, and Safari).
+As of 7/25/2023, it fully functions on latest mainstream browsers (Chrome, Edge, Firefox, and Safari).
 
 ### Installation
 
