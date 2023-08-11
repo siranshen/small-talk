@@ -63,7 +63,14 @@ export default function Sidebar() {
                   Icon={SettingsIcon}
                   onClick={() => setSettingsOpen(true)}
                 />
-                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} onClick={() => router.push('/')} />
+                <SidebarFunctionButton
+                  text={i18n('functions.newChat')}
+                  Icon={NewChatIcon}
+                  onClick={() => {
+                    router.push('/')
+                    setOpen(false)
+                  }}
+                />
                 <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}} />
               </div>
             </div>

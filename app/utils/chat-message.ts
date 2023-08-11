@@ -67,7 +67,7 @@ export class AudioChatMessage extends ChatMessage {
   constructor(text: string, isAi: boolean, audio: Blob) {
     super(text, isAi)
     this.audio = audio
-    // TODO Might have to be managed in a central place so it can revoked when the chat goes away
+    // TODO Might have to be managed in a central place so it can be revoked when the chat goes away
     this.audioSrc = URL.createObjectURL(audio)
   }
 

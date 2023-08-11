@@ -49,6 +49,7 @@ export default function Chat() {
 
   const isAutoplayEnabled = useRef<boolean>(false)
   const audioContextRef = useRef<AudioContext | null>(null)
+  const emptyAudioRef = useRef<HTMLAudioElement>(null)
   const speechRecognitionProcessorRef = useRef<SpeechRecognitionProcessor | null>(null)
   const speechSynthesisTaskProcessorRef = useRef<SpeechSynthesisTaskProcessor | null>(null)
   const [isConfiguringAudio, setConfiguringAudio] = useState<boolean>(false)
@@ -61,26 +62,27 @@ export default function Chat() {
     return navigator.userAgent.indexOf('Safari') !== -1 && navigator.userAgent.indexOf('Chrome') === -1
   }, [])
 
+  const resumeAudioIfNecessary = useCallback(async () => {
+    if (!audioContextRef.current) {
+      audioContextRef.current = new AudioContext()
+      audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js').then(() => setConfiguringAudio(false))
+    }
+    if (audioContextRef.current.state == 'suspended') {
+      await audioContextRef.current.resume()
+    }
+  }, [])
+
   /* A workaround to unlock autoplay on Webkit browsers */
-  const enableAudioAutoplay = useCallback(() => {
+  const enableAudioAutoplay = useCallback(async () => {
     if (isAutoplayEnabled.current || !audioContextRef.current) {
       return
-    }
-    const audioContext = audioContextRef.current
-    if (audioContext.state == 'suspended') {
-      audioContext.resume()
     }
     if (!isSafari()) {
       // Non-Webkit browsers don't need the rest
       return
     }
+    await emptyAudioRef.current?.play()
     isAutoplayEnabled.current = true
-    const dummyBuffer = audioContext.createBuffer(1, 1, 22050)
-    const source = audioContext.createBufferSource()
-    source.buffer = dummyBuffer
-    source.loop = true
-    source.connect(audioContext.destination)
-    source.start()
   }, [isSafari])
 
   /* Run once */
@@ -116,6 +118,7 @@ export default function Chat() {
       const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
       const voiceIndex = sessionStorage.getItem(VOICE_NAME_KEY) ?? '0'
       const voice = learningLanguage.voiceNames[parseInt(voiceIndex)]
+      await resumeAudioIfNecessary()
       const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
         audioContextRef.current as AudioContext,
         SAMPLE_RATE,
@@ -189,12 +192,12 @@ export default function Chat() {
       setStreaming(false)
       setPlayingAudio(false)
     },
-    [addToast, i18nCommon, setConvo]
+    [addToast, i18nCommon, resumeAudioIfNecessary, setConvo]
   )
 
   const startChat = useCallback(async () => {
-    setStarted(true)
     enableAudioAutoplay()
+    setStarted(true)
     await generateResponse([])
   }, [enableAudioAutoplay, generateResponse])
 
@@ -218,14 +221,11 @@ export default function Chat() {
     setConfiguringAudio(true)
     try {
       const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      await resumeAudioIfNecessary()
       if (!audioContextRef.current) {
-        audioContextRef.current = new AudioContext()
-        await audioContextRef.current.audioWorklet.addModule('/audio/mono-processor.js')
+        return
       }
       const audioContext = audioContextRef.current
-      if (audioContext.state == 'suspended') {
-        audioContext.resume()
-      }
       const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
       speechRecognitionProcessorRef.current = new SpeechRecognitionProcessor(
         audioContext,
@@ -253,7 +253,7 @@ export default function Chat() {
       setConfiguringAudio(false)
       setTranscribing(false)
     }
-  }, [addToast, i18nCommon, isSafari])
+  }, [addToast, i18nCommon, isSafari, resumeAudioIfNecessary])
 
   const stopRecording = useCallback(async () => {
     if (!speechRecognitionProcessorRef.current) {
@@ -312,6 +312,7 @@ export default function Chat() {
               <button className='solid-button rounded-lg !px-4' onClick={startChat}>
                 {i18n('startChat')}
               </button>
+              <audio preload='auto' src='/audio/empty.wav' className='hidden' ref={emptyAudioRef} />
             </div>
           )}
           <div className='clear-both h-32'></div>
