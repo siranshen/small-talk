@@ -6,7 +6,7 @@ import Select from '@/app/components/form/Select'
 import { useTranslations } from 'next-intl'
 import { useCallback, useEffect, useRef } from 'react'
 import { usePathname, useRouter } from 'next-intl/client'
-import { LEVEL_KEY, SELF_INTRO_KEY, SYSTEM_LANG_KEY } from '@/app/utils/local-keys'
+import { SELF_INTRO_KEY, SYSTEM_LANG_KEY } from '@/app/utils/local-keys'
 import TextArea from '@/app/components/form/TextArea'
 
 export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; setOpen: Function }) {
@@ -14,26 +14,23 @@ export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; se
   const i18nCommon = useTranslations('Common')
 
   const systemLangRef = useRef<HTMLSelectElement>(null)
-  const levelRef = useRef<HTMLSelectElement>(null)
   const selfIntroRef = useRef<HTMLTextAreaElement>(null)
   const router = useRouter()
   const pathname = usePathname()
 
   useEffect(() => {
-    if (!systemLangRef.current || !levelRef.current || !selfIntroRef.current) {
+    if (!systemLangRef.current || !selfIntroRef.current) {
       return
     }
     systemLangRef.current.value = localStorage.getItem(SYSTEM_LANG_KEY) ?? LANGUAGES[0].locale
-    levelRef.current.value = localStorage.getItem(LEVEL_KEY) ?? 'beginner'
     selfIntroRef.current.value = localStorage.getItem(SELF_INTRO_KEY) ?? ''
   }, [])
 
   const setLanguages = useCallback(() => {
-    if (!systemLangRef.current || !levelRef.current || !selfIntroRef.current) {
+    if (!systemLangRef.current || !selfIntroRef.current) {
       return
     }
     localStorage.setItem(SYSTEM_LANG_KEY, systemLangRef.current.value)
-    localStorage.setItem(LEVEL_KEY, levelRef.current.value)
     localStorage.setItem(SELF_INTRO_KEY, selfIntroRef.current.value)
     setOpen(false)
     router.replace(pathname, { locale: systemLangRef.current.value })
@@ -49,13 +46,6 @@ export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; se
           {LANGUAGES.map((lang) => (
             <option key={lang.locale} value={lang.locale}>
               {lang.name}
-            </option>
-          ))}
-        </Select>
-        <Select label={i18n('level')} id='level' ref={levelRef}>
-          {['beginner', 'intermediate', 'advanced'].map((key) => (
-            <option key={key} value={key}>
-              {i18n(`levelOptions.${key}`)}
             </option>
           ))}
         </Select>

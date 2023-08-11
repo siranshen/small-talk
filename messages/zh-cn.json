@@ -13,18 +13,18 @@
   "Settings": {
     "title": "设置",
     "systemLang": "系统语言",
-    "level": "你的水平",
-    "levelOptions": {
-      "beginner": "初学",
-      "intermediate": "中级",
-      "advanced": "进阶"
-    },
     "selfIntro": "自我介绍",
     "selfIntroPlaceholder": "讲讲你自己，以便我们更好地了解你！"
   },
   "NewChatSettings": {
     "title": "新对话",
     "learningLang": "学习语言",
+    "level": "你的水平",
+    "levelOptions": {
+      "beginner": "初学",
+      "intermediate": "中级",
+      "advanced": "进阶"
+    },
     "character": "人物",
     "topic": "话题",
     "topicPlaceholder": "你想聊些什么呢？"

@@ -13,18 +13,18 @@
   "Settings": {
     "title": "Settings",
     "systemLang": "System language",
-    "level": "Your level",
-    "levelOptions": {
-      "beginner": "Beginner",
-      "intermediate": "Intermediate",
-      "advanced": "Advanced"
-    },
     "selfIntro": "Self intro",
     "selfIntroPlaceholder": "Tell us about yourself so we get to know you better!"
   },
   "NewChatSettings": {
     "title": "New Chat",
     "learningLang": "Learning language",
+    "level": "Your level",
+    "levelOptions": {
+      "beginner": "Beginner",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced"
+    },
     "character": "Character",
     "topic": "Topic",
     "topicPlaceholder": "What do you want to talk about?"

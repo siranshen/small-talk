@@ -13,18 +13,18 @@
   "Settings": {
     "title": "Ajustes",
     "systemLang": "Idioma del sistema",
-    "level": "Tu nivel",
-    "levelOptions": {
-      "beginner": "Principiante",
-      "intermediate": "Intermedio",
-      "advanced": "Avanzado"
-    },
     "selfIntro": "Autopresentación",
     "selfIntroPlaceholder": "¡Cuéntanos sobre ti para conocerte mejor!"
   },
   "NewChatSettings": {
     "title": "Nuevo chat",
     "learningLang": "Idioma de aprendizaje",
+    "level": "Tu nivel",
+    "levelOptions": {
+      "beginner": "Principiante",
+      "intermediate": "Intermedio",
+      "advanced": "Avanzado"
+    },
     "character": "Personaje",
     "topic": "tema",
     "topicPlaceholder": "¿Sobre qué quieres hablar?"
