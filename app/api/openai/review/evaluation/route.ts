@@ -3,6 +3,8 @@ import getResponseStream from '@/app/utils/openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { GPTMessage } from '@/app/utils/chat-message'
 
+export const runtime = 'edge'
+
 const constructSystemPrompt = (language: string, evalLanguage: string, convo: string) => {
   return dedent`You are a professional ${evalLanguage} teacher.
   You are given a conversation below between the AI assistant and a user, and your task is to evaluate the user's performance.
@@ -35,7 +37,7 @@ export async function POST(request: NextRequest) {
       ),
       [],
       0,
-      1500
+      1000
     )
     return new NextResponse(stream)
   } catch (e) {

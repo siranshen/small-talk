@@ -2,6 +2,8 @@ import dedent from 'dedent'
 import getResponseStream from '@/app/utils/openai'
 import { NextRequest, NextResponse } from 'next/server'
 
+export const runtime = 'edge'
+
 const constructSystemPrompt = (language: string, evalLanguage: string, evaluation: string) => {
   return dedent`You are a professional ${evalLanguage} teacher.
   You are given an evaluation of a user's performance based on a previous chat in ${evalLanguage}. The user is learning ${evalLanguage}.
