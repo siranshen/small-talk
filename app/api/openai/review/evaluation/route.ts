@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
         messages.map((msg: GPTMessage) => `${msg.role}: ${msg.content}`).join('\n')
       ),
       [],
-      0
+      0,
+      1500
     )
     return new NextResponse(stream)
   } catch (e) {
