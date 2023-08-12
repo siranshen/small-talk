@@ -12,7 +12,7 @@ function ScenarioButton({ icon, text, onClick }: { icon: string; text: string; o
         before-content={icon}
         className='before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[attr(before-content)] mr-6'
       />
-      <div>{text}</div>
+      <div className='overflow-hidden whitespace-nowrap text-ellipsis'>{text}</div>
     </button>
   )
 }

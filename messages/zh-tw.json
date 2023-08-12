@@ -41,7 +41,7 @@
     "scenarios": {
       "customize": {
         "icon": "🗣️",
-        "text": "自訂你的主題"
+        "text": "自訂主題"
       },
       "0": {
         "icon": "🎬",

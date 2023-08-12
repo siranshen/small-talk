@@ -41,7 +41,7 @@
     "scenarios": {
       "customize": {
         "icon": "🗣️",
-        "text": "주제를 사용자 정의하세요"
+        "text": "주제를 사용자 정의"
       },
       "0": {
         "icon": "🎬",

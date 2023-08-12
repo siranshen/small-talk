@@ -41,7 +41,7 @@
     "scenarios": {
       "customize": {
         "icon": "🗣️",
-        "text": "Customize your topic"
+        "text": "Customize topic"
       },
       "0": {
         "icon": "🎬",
