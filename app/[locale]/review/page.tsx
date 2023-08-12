@@ -63,7 +63,7 @@ export default function Review() {
           },
           body: JSON.stringify({
             evaluation: evaluationRef.current,
-            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage(true)),
+            messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()),
             language: systemLanguage.name,
             evalLanguage: learningLanguage.name,
           }),

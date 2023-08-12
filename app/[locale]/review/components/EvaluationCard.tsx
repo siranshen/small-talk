@@ -32,7 +32,7 @@ async function fetchEvaluation(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      messages: convo.slice(-10).map((msg) => msg.toGPTMessage()), // TODO: Calculate tokens used
+      messages: convo.slice(-10).map((msg) => msg.toGPTMessage(true)), // TODO: Calculate tokens used
       language: systemLang,
       evalLanguage: learningLang,
     }),
