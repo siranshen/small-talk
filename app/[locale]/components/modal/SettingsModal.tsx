@@ -9,7 +9,15 @@ import { usePathname, useRouter } from 'next-intl/client'
 import { SELF_INTRO_KEY, SYSTEM_LANG_KEY } from '@/app/utils/local-keys'
 import TextArea from '@/app/components/form/TextArea'
 
-export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; setOpen: Function }) {
+export default function SettingsModal({
+  isOpen,
+  setOpen,
+  addToast,
+}: {
+  isOpen: boolean
+  setOpen: (isOpen: boolean) => void
+  addToast: (message: string, duration?: number) => void
+}) {
   const i18n = useTranslations('Settings')
   const i18nCommon = useTranslations('Common')
 
@@ -33,8 +41,9 @@ export default function SettingsModal({ isOpen, setOpen }: { isOpen: boolean; se
     localStorage.setItem(SYSTEM_LANG_KEY, systemLangRef.current.value)
     localStorage.setItem(SELF_INTRO_KEY, selfIntroRef.current.value)
     setOpen(false)
+    addToast(i18n('saved'), 1000)
     router.replace(pathname, { locale: systemLangRef.current.value })
-  }, [pathname, router, setOpen])
+  }, [addToast, i18n, pathname, router, setOpen])
 
   return (
     <SamePageModal isOpen={isOpen} setOpen={setOpen}>

@@ -12,6 +12,7 @@
   },
   "Settings": {
     "title": "Ajustes",
+    "saved": "¡Guardado!",
     "systemLang": "Idioma del sistema",
     "selfIntro": "Autopresentación",
     "selfIntroPlaceholder": "¡Cuéntanos sobre ti para conocerte mejor!"
@@ -142,6 +143,7 @@
     "confirm": "Confirmar",
     "cancel": "Cancelar",
     "error": "Lo siento, ocurrió un error...",
-    "loading": "Cargando..."
+    "loading": "Cargando...",
+    "comingSoon": "¡Próximamente!"
   }
 }

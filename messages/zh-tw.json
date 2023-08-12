@@ -12,6 +12,7 @@
   },
   "Settings": {
     "title": "設定",
+    "saved": "保存成功！",
     "systemLang": "系統語言",
     "selfIntro": "自我介紹",
     "selfIntroPlaceholder": "講講你自己，以便我們更好地了解你！"
@@ -142,6 +143,7 @@
     "confirm": "確認",
     "cancel": "取消",
     "error": "抱歉，剛出了個小問題...",
-    "loading": "载入中..."
+    "loading": "载入中...",
+    "comingSoon": "敬請期待！"
   }
 }

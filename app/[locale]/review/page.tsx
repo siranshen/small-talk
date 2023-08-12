@@ -10,7 +10,7 @@ import { ChatLineGroup, LoadingChatLineGroup } from '@/app/components/chat/ChatL
 import QAInput from './components/QAInput'
 import useToasts from '@/app/hooks/toast'
 import { useTranslations } from 'next-intl'
-import Toast from '@/app/components/toast/Toast'
+import Toaster from '@/app/components/toast/Toaster'
 import Loading from './components/Loading'
 
 function useStorageData(): StorageData | null {
@@ -105,9 +105,7 @@ export default function Review() {
 
   return (
     <main className='animate-[fade-in_600ms] flex-1 h-full relative overflow-hidden'>
-      {toasts.map((toast) => (
-        <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
-      ))}
+      <Toaster toasts={toasts} removeToast={removeToast} />
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
         <div className='after:content-["📃"] after:ml-2'>{i18n('header.title')}</div>
       </header>

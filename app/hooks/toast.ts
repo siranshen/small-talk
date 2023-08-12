@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 
-interface ToastData {
+export interface ToastData {
   id: number
   message: string
   duration: number

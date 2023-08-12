@@ -16,7 +16,7 @@ import {
   VOICE_NAME_KEY,
   TOPIC_KEY,
 } from '@/app/utils/local-keys'
-import Toast from '@/app/components/toast/Toast'
+import Toaster from '@/app/components/toast/Toaster'
 import useToasts from '@/app/hooks/toast'
 import useLocaleLoader from '@/app/hooks/locale'
 import MicIcon from '@/public/icons/mic.svg'
@@ -287,9 +287,7 @@ export default function Chat() {
   return (
     /* overflow-hidden prevents sticky div from jumping */
     <main className='animate-[fade-in_600ms] flex-1 h-full relative overflow-hidden' onClick={enableAudioAutoplay}>
-      {toasts.map((toast) => (
-        <Toast key={toast.id} id={toast.id} message={toast.message} duration={toast.duration} removeToast={removeToast} />
-      ))}
+      <Toaster toasts={toasts} removeToast={removeToast} />
       <header className='sticky top-0 left-0 w-full h-[2.5rem] border-b border-solid border-b-[--secondary-theme-color] lg:border-none flex items-center justify-around font-medium'>
         <div className='after:content-["💬"] after:ml-2'>{topicTitle ?? i18nCommon('loading')}</div>
       </header>

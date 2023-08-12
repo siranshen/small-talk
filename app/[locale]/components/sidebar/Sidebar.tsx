@@ -4,20 +4,33 @@ import GithubLogo from '@/public/icons/github-mark.svg'
 import Logo from '@/public/icons/logo.svg'
 import SettingsIcon from '@/public/icons/settings.svg'
 import NewChatIcon from '@/public/icons/new.svg'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import SidebarToggleButton from './SidebarToggleButton'
 import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import SidebarFunctionButton from './SidebarFunctionButton'
 import SettingsModal from '../modal/SettingsModal'
 import { useRouter } from 'next-intl/client'
+import Toaster from '@/app/components/toast/Toaster'
+import useToasts from '@/app/hooks/toast'
 
 export default function Sidebar() {
   const i18n = useTranslations('Sidebar')
+  const i18nCommon = useTranslations('Common')
   const router = useRouter()
+  const [toasts, addToast, removeToast] = useToasts()
 
   const [isOpen, setOpen] = useState<boolean>(false)
   const [isSettingsOpen, setSettingsOpen] = useState<boolean>(false)
+
+  const handleNewChat = useCallback(() => {
+    router.push('/')
+    setOpen(false)
+  }, [router])
+
+  const handleDisabled = useCallback(() => {
+    addToast(i18nCommon('comingSoon'))
+  }, [addToast, i18nCommon])
 
   /* Run once */
   useEffect(() => {
@@ -26,7 +39,8 @@ export default function Sidebar() {
 
   return (
     <>
-      <SettingsModal isOpen={isSettingsOpen} setOpen={setSettingsOpen} />
+      <Toaster toasts={toasts} removeToast={removeToast} />
+      <SettingsModal isOpen={isSettingsOpen} setOpen={setSettingsOpen} addToast={addToast} />
       {/* Overlay */}
       <div
         className={`${
@@ -63,15 +77,8 @@ export default function Sidebar() {
                   Icon={SettingsIcon}
                   onClick={() => setSettingsOpen(true)}
                 />
-                <SidebarFunctionButton
-                  text={i18n('functions.newChat')}
-                  Icon={NewChatIcon}
-                  onClick={() => {
-                    router.push('/')
-                    setOpen(false)
-                  }}
-                />
-                <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} disabled onClick={() => {}} />
+                <SidebarFunctionButton text={i18n('functions.newChat')} Icon={NewChatIcon} onClick={handleNewChat} />
+                <SidebarFunctionButton text={i18n('functions.prevChats')} Icon={Logo} onClick={handleDisabled} />
               </div>
             </div>
             <footer className='border-t pt-4 text-sm'>
