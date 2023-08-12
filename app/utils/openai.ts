@@ -47,7 +47,6 @@ export default async function getResponseStream(systemMessage: string, messages:
           try {
             const json = JSON.parse(data)
             if (json.choices[0].finish_reason != null) {
-              console.info('OpenAI finishing with reason:', json.choices[0].finish_reason)
               controller.close()
               return
             }

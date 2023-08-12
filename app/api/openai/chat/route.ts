@@ -5,6 +5,12 @@ import { NextRequest, NextResponse } from 'next/server'
 
 export const runtime = 'edge'
 
+const levelMap: Record<string, string> = {
+  'beginner': 'Use simple words and short sentences.',
+  'intermediate': 'Use simple words in general, but use some complex words from time to time.',
+  'advanced': 'Use complex words and sentences.',
+}
+
 const constructSystemPrompt = (
   language: string,
   level: string,
@@ -20,7 +26,7 @@ const constructSystemPrompt = (
 
   ## Rules
   - Use ${language} to communicate with the user.${
-    level ? `\n- User's language skill is ${level} level. Adjust your word choices accordingly.` : ''
+    level ? `\n- User's language skill is ${level} level. ${levelMap[level]}` : ''
   }
   - Talk in an informal tone as a friend.
   - Keep your response concise.
@@ -37,7 +43,10 @@ const constructSystemPrompt = (
 export async function POST(request: NextRequest) {
   const { messages, language, level, selfIntro, speakerName, topic } = await request.json()
   try {
-    const stream = await getResponseStream(constructSystemPrompt(language, level, selfIntro, speakerName, topic, messages.length === 0), messages)
+    const stream = await getResponseStream(
+      constructSystemPrompt(language, level, selfIntro, speakerName, topic, messages.length === 0),
+      messages
+    )
     return new NextResponse(stream)
   } catch (e) {
     console.log('Error calling OpenAI', e)
