@@ -12,6 +12,8 @@ As of 8/8/2023:
 - [X] Support review mode, where the AI gives you feedback in your own language on the recent conversation. You can ask AI to elaborate or explain to you when you are confused!
 - [X] Add pre-defined scenarios, so you can learn to talk in different common scenarios.
 - [X] Allow self intro as a prompt so AI can know you before you even talk!
+- [ ] Redesign review mode. Support more granular grammer checks, etc.
+- [ ] Add in-place translation in chat mode.
 - [ ] Support customization of AI personality and voice. You can even write your own prompt to define how your language tutor/buddy should talk like.
 - [ ] Store and load conversations based on a (file-based) database.
 
