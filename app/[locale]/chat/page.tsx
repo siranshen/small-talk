@@ -118,12 +118,14 @@ export default function Chat() {
       const learningLanguage = LANGUAGES_MAP[localStorage.getItem(LEARNING_LANG_KEY) ?? LANGUAGES[0].locale]
       const voiceIndex = sessionStorage.getItem(VOICE_NAME_KEY) ?? '0'
       const voice = learningLanguage.voiceNames[parseInt(voiceIndex)]
+      const userLevel = localStorage.getItem(LEVEL_KEY) ?? ''
       await resumeAudioIfNecessary()
       const ssProcessor = (speechSynthesisTaskProcessorRef.current = new SpeechSynthesisTaskProcessor(
         audioContextRef.current as AudioContext,
         SAMPLE_RATE,
         learningLanguage,
-        voice
+        voice,
+        userLevel
       ))
       let response
       try {
@@ -135,7 +137,7 @@ export default function Chat() {
           body: JSON.stringify({
             messages: newConvo.slice(-8).map((msg) => msg.toGPTMessage()), // TODO: Calculate tokens
             language: learningLanguage.name,
-            level: localStorage.getItem(LEVEL_KEY) ?? '',
+            level: userLevel,
             selfIntro: localStorage.getItem(SELF_INTRO_KEY) ?? '',
             speakerName: voice.name,
             topic: sessionStorage.getItem(TOPIC_PROMPT_KEY) ?? 'Undefined. Can be any random topic.',

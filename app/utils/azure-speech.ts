@@ -50,13 +50,19 @@ export interface SpeechSynthesisTask {
   text: string
 }
 
-export async function generateSpeech(speechSynthesizer: SpeechSynthesizer, speechName: string, voiceCode: string, text: string): Promise<ArrayBuffer> {
+export async function generateSpeech(
+  speechSynthesizer: SpeechSynthesizer,
+  speechName: string,
+  voiceCode: string,
+  text: string,
+  speakingRate: number
+): Promise<ArrayBuffer> {
   return new Promise<ArrayBuffer>((resolve, reject) => {
     speechSynthesizer.speakSsmlAsync(
       `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xmlns:mstts="https://www.w3.org/2001/mstts" xml:lang="${speechName}">
         <voice name="${voiceCode}">
           <mstts:express-as style="cheerful" styledegree="0.5">
-            <prosody rate="+10.00%">
+            <prosody rate="${speakingRate}">
               ${text}
             </prosody>
           </mstts:express-as>
@@ -80,6 +86,7 @@ export class SpeechSynthesisTaskProcessor {
   private sampleRate: number
   private lang: Language
   private voice: VoiceName
+  private speakingRate: number
 
   private speechSynthesizer: SpeechSynthesizer | null = null
   private audioPlayQueue: QueueObject<AudioPlayTask> | null = null
@@ -89,11 +96,12 @@ export class SpeechSynthesisTaskProcessor {
   private waitPromise: Promise<void> | null = null
   private waitResolve: (() => void) | null = null
 
-  constructor(audioContext: AudioContext, sampleRate: number, lang: Language, voice: VoiceName) {
+  constructor(audioContext: AudioContext, sampleRate: number, lang: Language, voice: VoiceName, userLevel: string) {
     this.audioContext = audioContext
     this.sampleRate = sampleRate
     this.lang = lang
     this.voice = voice
+    this.speakingRate = userLevel === 'beginner' ? 0.9 : userLevel === 'advanced' ? 1.1 : 1
   }
 
   async init(): Promise<void> {
@@ -136,7 +144,13 @@ export class SpeechSynthesisTaskProcessor {
         return
       }
       try {
-        const audioData = await generateSpeech(this.speechSynthesizer, this.lang.speechName, this.voice.code, task.text)
+        const audioData = await generateSpeech(
+          this.speechSynthesizer,
+          this.lang.speechName,
+          this.voice.code,
+          task.text,
+          this.speakingRate
+        )
         this.audioPlayQueue?.push({ audioData })
       } catch (e) {
         console.error('Error generating speech', e)

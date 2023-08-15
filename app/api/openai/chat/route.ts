@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export const runtime = 'edge'
 
 const levelMap: Record<string, string> = {
-  'beginner': 'Use simple words and short sentences.',
+  'beginner': 'Use extremely simple words and short sentences.',
   'intermediate': 'Use simple words in general, but use some complex words from time to time.',
   'advanced': 'Use complex words and sentences.',
 }
