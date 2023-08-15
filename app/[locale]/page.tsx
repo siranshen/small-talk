@@ -7,12 +7,12 @@ import { useTranslations } from 'next-intl'
 
 function ScenarioButton({ icon, text, onClick }: { icon: string; text: string; onClick: () => void }) {
   return (
-    <button className='solid-button-light rounded-lg !px-4 !py-3 relative text-left flex items-center' onClick={onClick}>
+    <button className='solid-button-light rounded-lg !px-5 !py-4 relative text-left flex items-center' onClick={onClick}>
       <div
         before-content={icon}
-        className='before:absolute before:top-1/2 before:-translate-y-1/2 before:content-[attr(before-content)] mr-6'
+        className='before:content-[attr(before-content)] before:text-[2rem] before:leading-9 mr-4'
       />
-      <div className='overflow-hidden whitespace-nowrap text-ellipsis'>{text}</div>
+      <div className='overflow-hidden line-clamp-2'>{text}</div>
     </button>
   )
 }
@@ -34,7 +34,7 @@ export default function Home() {
         <div className='my-0 mx-auto h-full overflow-scroll'>
           <div className='max-w-[650px] my-0 mx-auto p-3'>
             <div className='mb-4 leading-6'>{i18n('intro.freetalk')}</div>
-            <div className='mb-4 leading-6 grid grid-cols-2 gap-2 sm:gap-3'>
+            <div className='mb-4 leading-6 grid grid-cols-2 sm:grid-cols-3 gap-[0.8rem] sm:gap-4'>
               <ScenarioButton
                 icon={i18n('scenarios.customize.icon')}
                 text={i18n('scenarios.customize.text')}
@@ -45,7 +45,7 @@ export default function Home() {
               />
             </div>
             <div className='mb-4 leading-6'>{i18n('intro.preset')}</div>
-            <div className='pb-14 leading-6 grid grid-cols-2 gap-2 sm:gap-3'>
+            <div className='pb-14 leading-6 grid grid-cols-2 sm:grid-cols-3 gap-[0.8rem] sm:gap-4'>
               {Array.from(Array(16).keys()).map((i) => (
                 <ScenarioButton
                   key={i}
