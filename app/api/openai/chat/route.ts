@@ -37,7 +37,7 @@ const constructSystemPrompt = (
   ## Response Format
   - Add a special token ${PAUSE_TOKEN} where appropriate to simulate a pause in human conversations.
   ### Example
-  Hey, man! I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?`
+  Hey, man! ${PAUSE_TOKEN} I haven't seen you for a while. ${PAUSE_TOKEN} I've been working a project lately, which is getting really run! ${PAUSE_TOKEN} How about you?`
 }
 
 export async function POST(request: NextRequest) {
