@@ -4,6 +4,13 @@ SmallTalk is an open source AI Chat Application specifically designed for learni
 
 People have been building many similar apps since the release of ChatGPT. They usually try to monetize it and the apps are not flexible enough. Therefore I wanted to create my own so it can be customized to my needs, and I welcome everyone else to fork or contribute to this repo.
 
+### Demo
+
+As of Aug 2023:
+
+[<img src="https://img.youtube.com/vi/vBeuNxn6-xM/hqdefault.jpg" width="600" height="300"
+/>](https://www.youtube.com/embed/vBeuNxn6-xM)
+
 ## Roadmap
 
 As of 8/8/2023:
