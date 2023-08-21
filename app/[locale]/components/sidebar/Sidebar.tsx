@@ -2,6 +2,7 @@
 
 import GithubLogo from '@/public/icons/github-mark.svg'
 import Logo from '@/public/icons/logo.svg'
+import LogoName from '@/public/icons/logo-name.svg'
 import SettingsIcon from '@/public/icons/settings.svg'
 import NewChatIcon from '@/public/icons/new.svg'
 import { useCallback, useEffect, useState } from 'react'
@@ -60,11 +61,11 @@ export default function Sidebar() {
           <SidebarToggleButton open={false} sidebarOpen={isOpen} setSidebarOpen={setOpen} />
 
           <div className='h-full p-4 flex flex-col overflow-auto'>
-            <div className='text-2xl font-[800] my-4 mx-0 flex'>
-              <div className='flex-[0_0_1.5rem] mr-3 flex items-center'>
+            <div className='my-4 mx-0 flex'>
+              <div className='flex-[0_0_1.5rem] flex items-center'>
                 <Logo alt='logo' width={24} height={24} />
+                <LogoName alt='SmallTalk' width={168} height={32} className='ml-3' />
               </div>
-              <span>SmallTalk</span>
             </div>
 
             <div className='flex-grow'>
