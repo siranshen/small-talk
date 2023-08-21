@@ -8,8 +8,9 @@ People have been building many similar apps since the release of ChatGPT. They u
 
 As of Aug 2023:
 
-[<img src="https://img.youtube.com/vi/vBeuNxn6-xM/hqdefault.jpg" width="600" height="300"
-/>](https://www.youtube.com/embed/vBeuNxn6-xM)
+https://github.com/siranshen/small-talk/assets/10250825/36e23bfa-4051-4bc3-b009-a2f5620c9816
+
+Or check it out on [YouTube](https://www.youtube.com/watch?v=vBeuNxn6-xM).
 
 ## Roadmap
 
