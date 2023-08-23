@@ -12,6 +12,8 @@ https://github.com/siranshen/small-talk/assets/10250825/36e23bfa-4051-4bc3-b009-
 
 Or check it out on [YouTube](https://www.youtube.com/watch?v=vBeuNxn6-xM).
 
+Alternatively, there is a Mandarin version as well on [Bilibili](https://www.bilibili.com/video/BV1B14y1q7n9/).
+
 ## Roadmap
 
 As of 8/8/2023:
