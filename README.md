@@ -29,7 +29,7 @@ As of 8/8/2023:
 
 There are a lot more things I should do to make the AI talk and sound more real, and, most importantly, know you well. I learned English partly by frequently talking to native speakers. You learn even faster if you have a good friend who speaks this language. The AI can be your good friend.
 
-I will keep working on it. If you have any suggestions, please feel free to open an issue or pull request.
+As of Oct 2023, I'm putting the project on hold indefinitely.
 
 ## Getting Started
 
@@ -65,6 +65,10 @@ Finally start the app simply by running:
 ```bash
 npm run dev
 ```
+
+### Web Hosting
+
+[Vercel](https://vercel.com/) is highly recommended for quick and easy deployments.
 
 ## Additional Notes
 
